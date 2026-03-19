@@ -96,8 +96,57 @@ function showLaporan() {
     return;
   }
 
+  const today = new Date();
+  const isSameDay = (d1, d2) =>
+    d1.getFullYear() === d2.getFullYear() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getDate() === d2.getDate();
+
   let totalPendapatan = 0;
+  let totalPendapatanHariIni = 0;
+  let totalTransaksi = riwayatPesanan.length;
+  const salesCount = {};
+
+  riwayatPesanan.forEach((entry) => {
+    totalPendapatan += entry.total || 0;
+    const entryDate = new Date(entry.date);
+    if (isSameDay(entryDate, today)) {
+      totalPendapatanHariIni += entry.total || 0;
+    }
+
+    (entry.items || []).forEach((i) => {
+      if (!salesCount[i.nama]) salesCount[i.nama] = 0;
+      salesCount[i.nama] += i.qty;
+    });
+  });
+
+  let bestSeller = "-";
+  let bestSellerCount = 0;
+  Object.entries(salesCount).forEach(([nama, jumlah]) => {
+    if (jumlah > bestSellerCount) {
+      bestSellerCount = jumlah;
+      bestSeller = `${nama} (${jumlah} item)`;
+    }
+  });
+
   let html = `
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+      <div class="p-4 rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div class="text-sm text-slate-500">Total Pendapatan Hari Ini</div>
+        <div class="text-xl font-bold text-emerald-600">Rp ${totalPendapatanHariIni.toLocaleString("id-ID")}</div>
+      </div>
+      <div class="p-4 rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div class="text-sm text-slate-500">Menu Paling Laku</div>
+        <div class="text-xl font-bold text-slate-700">${bestSeller}</div>
+      </div>
+      <div class="p-4 rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div class="text-sm text-slate-500">Total Transaksi Berhasil</div>
+        <div class="text-xl font-bold text-slate-700">${totalTransaksi}</div>
+      </div>
+    </div>
+  `;
+
+  html += `
     <div class="overflow-x-auto">
       <table class="min-w-full text-sm divide-y divide-slate-200">
         <thead class="bg-slate-100 text-slate-600">
@@ -113,16 +162,15 @@ function showLaporan() {
 
   riwayatPesanan.forEach((entry, idx) => {
     const tgl = new Date(entry.date).toLocaleString("id-ID");
-    const namaItem = entry.items.map((i) => `${i.nama} x${i.qty}`).join(", ");
+    const namaItem = (entry.items || []).map((i) => `${i.nama} x${i.qty}`).join(", ");
     html += `
       <tr class="hover:bg-slate-50">
         <td class="px-3 py-2">${idx + 1}</td>
         <td class="px-3 py-2">${tgl}</td>
         <td class="px-3 py-2">${namaItem}</td>
-        <td class="px-3 py-2">Rp ${entry.total.toLocaleString("id-ID")}</td>
+        <td class="px-3 py-2">Rp ${(entry.total || 0).toLocaleString("id-ID")}</td>
       </tr>
     `;
-    totalPendapatan += entry.total;
   });
 
   html += `
@@ -332,6 +380,23 @@ const tampilanOrderan = () => {
   }
 };
 
+function updateKembalian() {
+  const totalBayar = keranjang.reduce((acc, item) => acc + item.harga * item.qty, 0);
+  const uangDiterimaEl = document.getElementById("uangDiterima");
+  const kembalianEl = document.getElementById("kembalianVal");
+
+  if (!uangDiterimaEl || !kembalianEl) return;
+
+  const uangDiterima = Number(uangDiterimaEl.value);
+  if (Number.isNaN(uangDiterima) || uangDiterima < 0) {
+    kembalianEl.textContent = "Rp 0";
+    return;
+  }
+
+  const kembalian = Math.max(0, uangDiterima - totalBayar);
+  kembalianEl.textContent = `Rp ${kembalian.toLocaleString("id-ID")}`;
+}
+
 function tambahOrderan() {
   const nomorMenu = document.getElementById("tambahOrder").value;
   const index = parseInt(nomorMenu, 10) - 1;
@@ -393,11 +458,24 @@ const kurangQty = (index) => {
 };
 
 const tambahQty = (index) => {
-  if (keranjang[index]) {
-    keranjang[index].qty += 1;
-    tampilanOrderan();
-    simpanData();
+  if (!keranjang[index]) return;
+
+  const menuDiKeranjang = keranjang[index];
+  const menuDiKopi = kopi.find((item) => item.nama === menuDiKeranjang.nama);
+
+  if (!menuDiKopi) {
+    showToast("Menu tidak ditemukan.", "error");
+    return;
   }
+
+  if (menuDiKeranjang.qty + 1 > menuDiKopi.stok) {
+    showToast("Stok tidak mencukupi.", "error");
+    return;
+  }
+
+  menuDiKeranjang.qty += 1;
+  tampilanOrderan();
+  simpanData();
 };
 
 function selesaikanPembayaran() {
@@ -406,16 +484,27 @@ function selesaikanPembayaran() {
     return;
   }
 
+  const totalBayar = keranjang.reduce((acc, item) => acc + item.harga * item.qty, 0);
+  const uangDiterimaEl = document.getElementById("uangDiterima");
+  const metodePembayaranEl = document.getElementById("metodePembayaran");
+  const kembalianEl = document.getElementById("kembalianVal");
+
+  const uangDiterima = uangDiterimaEl ? Number(uangDiterimaEl.value) : 0;
+  const metodePembayaran = metodePembayaranEl ? metodePembayaranEl.value : "Tunai";
+
+  if (Number.isNaN(uangDiterima) || uangDiterima < totalBayar) {
+    showToast("Uang diterima harus tidak kurang dari total bayar.", "error");
+    return;
+  }
+
   if (!confirm("Apakah pesanan sudah benar?")) {
     return;
   }
 
-  const totalBayar = keranjang.reduce((acc, item) => acc + item.harga * item.qty, 0);
   const now = new Date();
   const auth = getAuthState();
   const aktor = auth?.role ? auth.role.toUpperCase() : "GUEST";
 
-  // Update stok masing-masing menu
   for (let orderItem of keranjang) {
     const menuIndex = kopi.findIndex((item) => item.nama === orderItem.nama);
     if (menuIndex < 0) continue;
@@ -427,10 +516,18 @@ function selesaikanPembayaran() {
     }
   }
 
+  const kembalian = Math.max(0, uangDiterima - totalBayar);
+  if (kembalianEl) {
+    kembalianEl.textContent = `Rp ${kembalian.toLocaleString("id-ID")}`;
+  }
+
   const transaksi = {
     date: now.toISOString(),
     items: [...keranjang],
-    total: totalBayar,
+    totalBayar,
+    uangDiterima,
+    kembalian,
+    metodePembayaran,
     kasir: aktor,
   };
 
@@ -446,7 +543,7 @@ function selesaikanPembayaran() {
   const strukRows = transaksi.items
     .map((item) =>
       `
-      <div class="struk-row">
+      <div class="struk-row" style="display:flex; justify-content:space-between; margin-bottom:0.25rem;">
         <span>${item.nama}</span>
         <span>${item.qty} x Rp ${item.harga.toLocaleString("id-ID")}</span>
         <span>Rp ${(item.harga * item.qty).toLocaleString("id-ID")}</span>
@@ -464,7 +561,11 @@ function selesaikanPembayaran() {
       <div class="struk-separator">=================================</div>
       ${strukRows}
       <div class="struk-separator">=================================</div>
-      <div style="text-align:right; font-weight:bold;">TOTAL: Rp ${totalBayar.toLocaleString("id-ID")}</div>
+      <div style="display:flex; justify-content:space-between; font-weight:bold;"> <span>Total</span> <span>Rp ${totalBayar.toLocaleString("id-ID")}</span></div>
+      <div style="display:flex; justify-content:space-between;"> <span>Uang Diterima</span> <span>Rp ${uangDiterima.toLocaleString("id-ID")}</span></div>
+      <div style="display:flex; justify-content:space-between;"> <span>Kembalian</span> <span>Rp ${kembalian.toLocaleString("id-ID")}</span></div>
+      <div style="display:flex; justify-content:space-between;"> <span>Metode</span> <span>${metodePembayaran}</span></div>
+      <div class="struk-separator">=================================</div>
     </div>
   `;
 

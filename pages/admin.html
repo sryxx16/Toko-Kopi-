@@ -5,6 +5,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Halaman Admin - Pengelolaan Menu Kopi</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @media print {
+        body * {
+          visibility: hidden !important;
+        }
+        #laporanArea,
+        #laporanArea * {
+          visibility: visible !important;
+        }
+        #laporanArea {
+          position: absolute !important;
+          top: 0 !important;
+          left: 0 !important;
+          width: 80mm !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          background: #fff !important;
+        }
+      }
+      #laporanArea .laporan-wrapper {
+        width: 80mm;
+        max-width: 80mm;
+        margin: 0;
+        padding: 8px;
+        box-sizing: border-box;
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        color: #000;
+      }
+      #laporanArea .laporan-separator {
+        border-bottom: 1px dashed #000;
+        margin: 4px 0;
+      }
+      #laporanArea table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      #laporanArea th,
+      #laporanArea td {
+        padding: 4px 2px;
+        border-bottom: 1px solid #ccc;
+      }
+      #laporanArea .summary-row {
+        font-weight: 700;
+        margin-top: 6px;
+        display: flex;
+        justify-content: space-between;
+      }
+    </style>
   </head>
   <body onload="initAdminPage()" class="bg-slate-50 text-slate-800">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
