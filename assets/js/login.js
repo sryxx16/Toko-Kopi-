@@ -25,8 +25,16 @@ function getUsers() {
     let users;
     if (!raw) {
       users = [
-        { username: "admin", password: encodePassword("admin123"), role: "admin" },
-        { username: "kasir", password: encodePassword("kasir123"), role: "kasir" },
+        {
+          username: "admin",
+          password: encodePassword("admin123"),
+          role: "admin",
+        },
+        {
+          username: "kasir",
+          password: encodePassword("kasir123"),
+          role: "kasir",
+        },
       ];
       localStorage.setItem(userStorageKey, JSON.stringify(users));
       return users;
@@ -37,13 +45,25 @@ function getUsers() {
       users = [];
     }
 
-    const hasAdmin = users.some((user) => user.username?.toLowerCase() === "admin");
-    const hasKasir = users.some((user) => user.username?.toLowerCase() === "kasir");
+    const hasAdmin = users.some(
+      (user) => user.username?.toLowerCase() === "admin",
+    );
+    const hasKasir = users.some(
+      (user) => user.username?.toLowerCase() === "kasir",
+    );
 
     if (!hasAdmin || !hasKasir) {
       const defaults = [
-        { username: "admin", password: encodePassword("admin123"), role: "admin" },
-        { username: "kasir", password: encodePassword("kasir123"), role: "kasir" },
+        {
+          username: "admin",
+          password: encodePassword("admin123"),
+          role: "admin",
+        },
+        {
+          username: "kasir",
+          password: encodePassword("kasir123"),
+          role: "kasir",
+        },
       ];
       users = [
         ...users.filter((u) => u.username && u.role),
@@ -130,7 +150,8 @@ function handleLogin() {
 
   // 3. Cek Password (Decode dulu data dari storage)
   const decodedPassword = decodePassword(user.password);
-  const isPasswordValid = decodedPassword === password || user.password === password;
+  const isPasswordValid =
+    decodedPassword === password || user.password === password;
 
   if (!isPasswordValid) {
     message.textContent = "Password salah. Coba lagi.";

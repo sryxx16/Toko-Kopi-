@@ -20,9 +20,10 @@
 
 body {
   min-height: 100vh;
-  background: linear-gradient(170deg, #f8f3ee 0%, #f5ede4 65%, #f0e8dd 100%);
+  background: #f8fafc;
   color: var(--text);
   padding: 0;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
 }
 
 .navbar {
@@ -91,12 +92,12 @@ body {
 }
 
 .card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 1.15rem;
-  margin-bottom: 1.1rem;
+  background: #ffffff;
+  border: 1px solid #dce4ea;
+  border-radius: 12px;
+  box-shadow: 0 8px 22px rgba(47, 61, 75, 0.08);
+  padding: 1.2rem;
+  margin-bottom: 1.2rem;
 }
 
 .card-header h3 {
@@ -118,29 +119,57 @@ body {
   border-radius: 10px;
   min-width: 180px;
   font-size: 0.95rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-group input:focus,
+.input-group select:focus,
+#tambahOrder:focus,
+#hargaMenu:focus,
+#menuBaru:focus,
+#stokMenu:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
 }
 
 button {
   border: none;
-  padding: 0.63rem 1rem;
-  border-radius: 999px;
+  padding: 0.75rem 1.25rem;
+  border-radius: 10px;
   font-weight: 700;
   cursor: pointer;
   color: #fff;
-  transition: all 0.2s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+  min-height: 42px;
 }
 
 button.success {
-  background: linear-gradient(120deg, #726147 0%, #754b33 100%);
+  background: #10b981; /* Emerald */
 }
 
 button.danger {
-  background: #cb4c4c;
+  background: #ef4444; /* Rose */
+}
+
+button.primary {
+  background: #3730a3; /* Indigo */
 }
 
 button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(14, 24, 37, 0.25);
+}
+
+.badge-status {
+  background: rgba(71, 85, 105, 0.12);
+  color: #334155;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.08);
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
 }
 
 table {
@@ -149,6 +178,12 @@ table {
   margin-top: 0.75rem;
   border-radius: var(--radius);
   overflow: hidden;
+  display: block;
+  overflow-x: auto;
+}
+
+table tr {
+  transition: background-color 0.25s ease;
 }
 
 th,
@@ -182,8 +217,9 @@ tbody tr:hover {
 }
 
 .total-section span {
-  font-size: 1.5rem;
-  font-weight: 800;
+  font-size: 2rem;
+  font-weight: 900;
+  color: #16a34a;
 }
 
 .status-message {
@@ -193,7 +229,11 @@ tbody tr:hover {
 
 @media (max-width: 980px) {
   .container { margin: 0.9rem auto; }
-  .dashboard-grid { display: block; }
+  .dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+}
+
+@media (min-width: 981px) {
+  .dashboard-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.2rem; }
 }
 
 @media (max-width: 700px) {

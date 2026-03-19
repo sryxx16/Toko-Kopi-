@@ -4,95 +4,94 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Halaman Order - Kasir</title>
-    <link rel="stylesheet" href="../assets/css/dashboard.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
   </head>
-  <body onload="initKasirPage()">
-    <nav class="navbar">
-      <a class="brand" href="order.html">KopiKita</a>
-      <div class="nav-right">
-        <a href="admin.html">Admin</a>
-        <a href="order.html">Order</a>
-        <a href="javascript:void(0);" onclick="logout()">Ganti Shift (Logout)</a>
+  <body onload="initKasirPage()" class="bg-slate-50 text-slate-800">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <header class="flex flex-wrap justify-between items-center mb-6">
+        <a href="order.html" class="text-2xl font-bold text-emerald-700">KopiKita</a>
+        <div class="flex items-center gap-3">
+          <a href="admin.html" class="px-3 py-2 rounded-lg hover:bg-slate-100">Admin</a>
+          <a href="order.html" class="px-3 py-2 rounded-lg bg-emerald-100 text-emerald-700">Order</a>
+          <button onclick="logout()" class="px-3 py-2 rounded-lg bg-rose-500 text-white hover:bg-rose-600">Ganti Shift (Logout)</button>
+        </div>
+      </header>
+
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 mb-6">
+        <div class="flex justify-between items-center flex-wrap gap-4">
+          <h1 class="text-2xl font-bold">🛒 Halaman Kasir</h1>
+          <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700">Role: Kasir</span>
+        </div>
       </div>
-    </nav>
 
-    <div class="container">
-      <div class="page-title">
-        <h1>🛒 HALAMAN KASIR</h1>
-        <span class="badge-status">Role: Kasir</span>
-      </div>
+      <div class="grid xl:grid-cols-2 gap-6">
+        <div class="space-y-6">
+          <section class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+            <div class="flex justify-between items-center mb-3">
+              <h2 class="font-semibold text-lg">📋 Daftar Menu</h2>
+              <button onclick="tampilanMenu()" class="px-3 py-1 text-sm rounded-lg bg-emerald-500 text-white hover:bg-emerald-600">Refresh</button>
+            </div>
+            <div class="overflow-x-auto rounded-lg border border-slate-200">
+              <table class="min-w-full text-sm">
+                <thead class="bg-slate-100 text-slate-600">
+                  <tr>
+                    <th class="px-3 py-2 text-left">No</th>
+                    <th class="px-3 py-2 text-left">Nama Menu</th>
+                    <th class="px-3 py-2 text-left">Harga</th>
+                  </tr>
+                </thead>
+                <tbody id="hasil" class="text-slate-700"></tbody>
+              </table>
+            </div>
+          </section>
 
-      <div class="dashboard-grid">
-        <div>
-          <div class="card">
-            <div class="card-header">
-              <h3>📋 Daftar Menu</h3>
+          <section class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+            <h2 class="font-semibold text-lg mb-3">➕ Tambah Pesanan</h2>
+            <div class="flex gap-2">
+              <input id="tambahOrder" type="number" placeholder="Nomor Menu" class="flex-1 rounded-lg border border-slate-300 px-3 py-2 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none" />
+              <button onclick="tambahOrderan()" class="rounded-lg bg-emerald-500 text-white px-4 py-2 hover:bg-emerald-600">Tambah</button>
             </div>
-            <button onclick="tampilanMenu()" class="success">🔄 Refresh Menu</button>
-            <table>
-              <thead>
-                <tr>
-                  <th>No</th>
-                  <th>Nama Menu</th>
-                  <th>Harga</th>
-                </tr>
-              </thead>
-              <tbody id="hasil"></tbody>
-            </table>
-          </div>
-
-          <div class="card">
-            <div class="card-header">
-              <h3>➕ Tambah Pesanan</h3>
-            </div>
-            <div class="input-group">
-              <input type="number" id="tambahOrder" placeholder="Masukan Nomor Menu" />
-              <button onclick="tambahOrderan()" class="success">➕ Tambah ke Pesanan</button>
-            </div>
-            <p class="status-message">Masukan nomor menu lalu klik tombol tambah.</p>
-          </div>
+            <p class="text-xs text-slate-500 mt-2">Masukan nomor menu lalu klik tambah.</p>
+          </section>
         </div>
 
-        <div>
-          <div class="card">
-            <div class="card-header">
-              <h3>📦 Pesanan Saat Ini</h3>
+        <div class="space-y-6">
+          <section class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+            <div class="flex justify-between items-center mb-3">
+              <h2 class="font-semibold text-lg">📦 Pesanan Saat Ini</h2>
+              <button onclick="tampilanOrderan()" class="px-3 py-1 text-sm rounded-lg bg-emerald-500 text-white hover:bg-emerald-600">Refresh</button>
             </div>
-            <button onclick="tampilanOrderan()" class="success">🔄 Refresh Orderan</button>
-            <table>
-              <thead>
-                <tr>
-                  <th>No</th>
-                  <th>Nama Menu</th>
-                  <th>Harga</th>
-                  <th>Qty</th>
-                  <th>SubTotal</th>
-                </tr>
-              </thead>
-              <tbody id="hasilOrder"></tbody>
-            </table>
-            <div class="total-section">
-              <h2>Total Bayar</h2>
-              <span id="totalBayar">Rp 0</span>
+            <div class="overflow-x-auto rounded-lg border border-slate-200">
+              <table class="min-w-full text-sm">
+                <thead class="bg-slate-100 text-slate-600">
+                  <tr>
+                    <th class="px-3 py-2">No</th>
+                    <th class="px-3 py-2">Nama</th>
+                    <th class="px-3 py-2">Harga</th>
+                    <th class="px-3 py-2">Qty</th>
+                    <th class="px-3 py-2">SubTotal</th>
+                  </tr>
+                </thead>
+                <tbody id="hasilOrder" class="text-slate-700"></tbody>
+              </table>
             </div>
-          </div>
 
-          <div class="card">
-            <div class="card-header">
-              <h3>💳 Pembayaran</h3>
+            <div class="mt-4 flex justify-between items-center font-bold">
+              <span>Total Bayar</span>
+              <span id="totalBayar" class="text-2xl text-emerald-600">Rp 0</span>
             </div>
-            <button onclick="selesaikanPembayaran()" class="success">✅ Selesaikan Pembayaran</button>
-          </div>
+          </section>
 
-          <div class="card">
-            <div class="card-header">
-              <h3>🗑️ Hapus Pesanan</h3>
+          <section class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-3">
+            <button onclick="selesaikanPembayaran()" class="w-full rounded-lg bg-indigo-600 text-white py-2 hover:bg-indigo-700">✅ Selesaikan Pembayaran</button>
+            <div>
+              <h3 class="font-semibold mb-2">🗑️ Hapus Pesanan</h3>
+              <div class="flex gap-2">
+                <input id="hapusOrder" type="number" placeholder="Nomor Urut Pesanan" class="flex-1 rounded-lg border border-slate-300 px-3 py-2 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none" />
+                <button onclick="hapusOrderan()" class="rounded-lg bg-rose-500 text-white px-4 py-2 hover:bg-rose-600">Hapus</button>
+              </div>
             </div>
-            <div class="input-group">
-              <input type="number" id="hapusOrder" placeholder="Masukan Nomor Urut Pesanan" />
-              <button onclick="hapusOrderan()" class="danger">🗑️ Hapus Orderan</button>
-            </div>
-          </div>
+          </section>
 
           <div id="strukArea"></div>
         </div>

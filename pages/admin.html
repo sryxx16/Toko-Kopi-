@@ -1,87 +1,81 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Halaman Menu - Kasir</title>
-    <link rel="stylesheet" href="../assets/css/dashboard.css" />
+    <title>Halaman Admin - Pengelolaan Menu Kopi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
   </head>
-  <body onload="initAdminPage()">
-    <nav class="navbar">
-      <a class="brand" href="admin.html">KopiKita</a>
-      <div class="nav-right">
-        <a href="javascript:void(0);" onclick="showLaporan()">Lihat Laporan Penjualan</a>
-        <a href="javascript:void(0);" onclick="logout()">Ganti Shift (Logout)</a>
-      </div>
-    </nav>
-
-    <div class="container">
-      <div class="page-title">
-        <h1>📋 HALAMAN ADMIN</h1>
-        <span class="badge-status">Role: Admin</span>
-      </div>
-
-      <div class="nav-links">
-        <a href="order.html">🛒 Halaman Order</a>
-      </div>
-
-      <div id="laporanArea" class="card" style="display: none;">
-        <div class="card-header">
-          <h3>📈 Laporan Penjualan</h3>
+  <body onload="initAdminPage()" class="bg-slate-50 text-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <header class="flex flex-wrap justify-between items-center mb-6">
+        <a href="admin.html" class="text-2xl font-bold text-emerald-700">KopiKita</a>
+        <div class="flex items-center gap-3">
+          <a href="admin.html" class="px-3 py-2 rounded-lg bg-emerald-100 text-emerald-700">Admin</a>
+          <a href="order.html" class="px-3 py-2 rounded-lg hover:bg-slate-100">Order</a>
+          <button onclick="logout()" class="px-3 py-2 rounded-lg bg-rose-500 text-white hover:bg-rose-600">Ganti Shift (Logout)</button>
         </div>
-        <div id="laporanContent"></div>
-      </div>
+      </header>
 
-      <!-- Add Menu Card -->
-      <div class="card">
-        <div class="card-header">
-          <h3>➕ Tambah Menu Baru</h3>
-        </div>
-        <div class="input-group">
-          <input type="text" id="menuBaru" placeholder="Masukan Nama Menu" />
-          <input
-            type="number"
-            id="hargaMenu"
-            placeholder="Masukan Harga Menu"
-          />
-          <input
-            type="number"
-            id="stokMenu"
-            placeholder="Masukan Stok Menu"
-            min="1"
-          />
-          <button onclick="tambahMenu()" class="success">➕ Tambah Menu</button>
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 mb-6">
+        <div class="flex justify-between items-center flex-wrap gap-4">
+          <h1 class="text-2xl font-bold">🧑‍💼 Halaman Admin</h1>
+          <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700">Role: Admin</span>
         </div>
       </div>
 
-      <!-- Menu List Card -->
-      <div class="card">
-        <div class="card-header">
-          <h3>📋 Daftar Menu</h3>
-        </div>
-        <button onclick="tampilanMenu()" class="success">
-          🔄 Refresh Menu
-        </button>
-        <table>
-          <thead>
-            <tr>
-              <th>No</th>
-              <th>Nama Menu</th>
-              <th>Harga</th>
-            </tr>
-          </thead>
-          <tbody id="hasil"></tbody>
-        </table>
+      <div id="laporanArea" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200 p-5 mb-6">
+        <h2 class="text-lg font-semibold mb-3">📈 Laporan Penjualan</h2>
+        <div id="laporanContent" class="text-slate-700"></div>
       </div>
 
-      <!-- Delete Menu Card -->
-      <div class="card">
-        <div class="card-header">
-          <h3>🗑️ Hapus Menu</h3>
+      <div class="grid xl:grid-cols-2 gap-6">
+        <div class="space-y-6">
+          <section class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+            <div class="flex justify-between items-center mb-3">
+              <h2 class="font-semibold text-lg">📋 Daftar Menu Kopi</h2>
+              <button onclick="tampilanMenu()" class="px-3 py-1 text-sm rounded-lg bg-emerald-500 text-white hover:bg-emerald-600">Refresh</button>
+            </div>
+            <div class="overflow-x-auto rounded-lg border border-slate-200">
+              <table class="min-w-full text-sm">
+                <thead class="bg-slate-100 text-slate-600">
+                  <tr>
+                    <th class="px-3 py-2 text-left">No</th>
+                    <th class="px-3 py-2 text-left">Nama Menu</th>
+                    <th class="px-3 py-2 text-left">Harga</th>
+                    <th class="px-3 py-2 text-left">Stok</th>
+                    <th class="px-3 py-2 text-left">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="hasil" class="text-slate-700"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+            <h2 class="font-semibold text-lg mb-3">➕ Tambah Menu Kopi</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
+              <input type="text" id="menuBaru" placeholder="Nama Menu" class="rounded-lg border border-slate-300 px-3 py-2 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none" />
+              <input type="number" id="hargaMenu" placeholder="Harga" class="rounded-lg border border-slate-300 px-3 py-2 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none" />
+              <input type="number" id="stokMenu" placeholder="Stok" min="1" class="rounded-lg border border-slate-300 px-3 py-2 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none" />
+            </div>
+            <button onclick="tambahMenu()" class="rounded-lg bg-emerald-500 text-white px-4 py-2 hover:bg-emerald-600">Tambah Menu</button>
+          </section>
         </div>
-        <div class="input-group">
-          <input type="number" id="hapus" placeholder="Masukan Nomor Menu" />
-          <button onclick="hapusMenu()" class="danger">🗑️ Hapus Menu</button>
+
+        <div class="space-y-6">
+          <section class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+            <div class="flex justify-between items-center mb-3">
+              <h2 class="font-semibold text-lg">📈 Statistik & Laporan</h2>
+              <button id="laporanBtn" onclick="toggleLaporan()" class="px-3 py-1 text-sm rounded-lg bg-emerald-500 text-white hover:bg-emerald-600">Lihat Laporan</button>
+            </div>
+            <div id="laporan" class="p-3 rounded-lg border border-slate-200 bg-slate-50 text-slate-700"></div>
+          </section>
+
+          <section class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+            <h2 class="font-semibold text-lg mb-3">🖨️ Cetak Laporan</h2>
+            <button onclick="window.print();" class="w-full rounded-lg bg-indigo-600 text-white py-2 hover:bg-indigo-700">Cetak</button>
+          </section>
         </div>
       </div>
     </div>

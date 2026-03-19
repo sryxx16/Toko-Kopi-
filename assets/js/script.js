@@ -7,6 +7,56 @@ kopi = kopi.map((item) => ({ nama: item.nama || "", harga: item.harga || 0, stok
 let keranjang = JSON.parse(localStorage.getItem("keranjang")) || [];
 let riwayatPesanan = JSON.parse(localStorage.getItem("riwayatPesanan")) || [];
 
+function showToast(message, type = "success") {
+  let toastArea = document.getElementById("toastArea");
+  if (!toastArea) {
+    toastArea = document.createElement("div");
+    toastArea.id = "toastArea";
+    toastArea.style.position = "fixed";
+    toastArea.style.top = "1rem";
+    toastArea.style.right = "1rem";
+    toastArea.style.zIndex = "9999";
+    toastArea.style.display = "flex";
+    toastArea.style.flexDirection = "column";
+    toastArea.style.gap = "0.5rem";
+    document.body.appendChild(toastArea);
+  }
+
+  const toast = document.createElement("div");
+  toast.textContent = message;
+  toast.style.padding = "0.85rem 1rem";
+  toast.style.borderRadius = "10px";
+  toast.style.boxShadow = "0 4px 14px rgba(0, 0, 0, 0.18)";
+  toast.style.color = "#fff";
+  toast.style.minWidth = "220px";
+  toast.style.fontWeight = "600";
+  toast.style.opacity = "0";
+  toast.style.transition = "opacity 0.2s ease, transform 0.2s ease";
+  toast.style.transform = "translateY(-12px)";
+
+  if (type === "error") {
+    toast.style.background = "#ef4444";
+  } else if (type === "primary") {
+    toast.style.background = "#3730a3";
+  } else {
+    toast.style.background = "#10b981";
+  }
+
+  toastArea.appendChild(toast);
+
+  requestAnimationFrame(() => {
+    toast.style.opacity = "1";
+    toast.style.transform = "translateY(0)";
+  });
+
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    toast.style.transform = "translateY(-12px)";
+    setTimeout(() => toastArea.removeChild(toast), 250);
+  }, 3500);
+}
+
+
 const authStorageKey = "kopiAppAuth";
 
 function getAuthState() {
@@ -39,24 +89,68 @@ function showLaporan() {
   const laporanContent = document.getElementById("laporanContent");
   if (!laporanTarget || !laporanContent) return;
 
+  laporanTarget.classList.remove("hidden");
+
   if (riwayatPesanan.length === 0) {
-    laporanTarget.style.display = "block";
-    laporanContent.innerHTML = "<p>Belum ada transaksi.</p>";
+    laporanContent.innerHTML = `<p class="text-sm text-slate-600">Belum ada transaksi.</p>`;
     return;
   }
 
-  laporanTarget.style.display = "block";
   let totalPendapatan = 0;
-  let html = `<table><thead><tr><th>#</th><th>Tanggal</th><th>Item</th><th>Total</th></tr></thead><tbody>`;
+  let html = `
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm divide-y divide-slate-200">
+        <thead class="bg-slate-100 text-slate-600">
+          <tr>
+            <th class="px-3 py-2 text-left">#</th>
+            <th class="px-3 py-2 text-left">Tanggal</th>
+            <th class="px-3 py-2 text-left">Item</th>
+            <th class="px-3 py-2 text-left">Total</th>
+          </tr>
+        </thead>
+        <tbody class="text-slate-700">
+  `;
+
   riwayatPesanan.forEach((entry, idx) => {
     const tgl = new Date(entry.date).toLocaleString("id-ID");
     const namaItem = entry.items.map((i) => `${i.nama} x${i.qty}`).join(", ");
-    html += `<tr><td>${idx + 1}</td><td>${tgl}</td><td>${namaItem}</td><td>Rp ${entry.total.toLocaleString("id-ID")}</td></tr>`;
+    html += `
+      <tr class="hover:bg-slate-50">
+        <td class="px-3 py-2">${idx + 1}</td>
+        <td class="px-3 py-2">${tgl}</td>
+        <td class="px-3 py-2">${namaItem}</td>
+        <td class="px-3 py-2">Rp ${entry.total.toLocaleString("id-ID")}</td>
+      </tr>
+    `;
     totalPendapatan += entry.total;
   });
-  html += `</tbody></table>`;
-  html += `<div style="margin-top: 1rem; padding: 0.65rem; border-top: 2px solid #d1b79e; font-weight: 700;">Total Pendapatan: Rp ${totalPendapatan.toLocaleString("id-ID")}</div>`;
+
+  html += `
+        </tbody>
+      </table>
+    </div>
+    <div class="mt-4 p-3 rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700 font-semibold">
+      Total Pendapatan: Rp ${totalPendapatan.toLocaleString("id-ID")}
+    </div>
+  `;
+
   laporanContent.innerHTML = html;
+}
+
+function toggleLaporan() {
+  const laporanTarget = document.getElementById("laporanArea");
+  const laporanBtn = document.getElementById("laporanBtn");
+  if (!laporanTarget || !laporanBtn) return;
+
+  const isHidden = laporanTarget.classList.contains("hidden");
+
+  if (isHidden) {
+    showLaporan();
+    laporanBtn.textContent = "Tutup Laporan";
+  } else {
+    laporanTarget.classList.add("hidden");
+    laporanBtn.textContent = "Lihat Laporan";
+  }
 }
 
 function initAdminPage() {
@@ -105,21 +199,21 @@ const tampilanMenu = () => {
 
 function editMenu(index) {
   if (index < 0 || index >= kopi.length) {
-    alert("Menu tidak ditemukan.");
+    showToast("Menu tidak ditemukan.", "error");
     return;
   }
 
   const current = kopi[index];
   const newName = prompt("Ubah nama menu:", current.nama);
   if (newName === null || newName.trim() === "") {
-    alert("Nama menu tidak boleh kosong.");
+    showToast("Nama menu tidak boleh kosong.", "error");
     return;
   }
 
   const newPriceInput = prompt("Ubah harga menu:", current.harga);
   const newPrice = parseInt(newPriceInput, 10);
   if (isNaN(newPrice) || newPrice < 1000) {
-    alert("Harga harus angka valid minimal Rp 1000.");
+    showToast("Harga harus angka valid minimal Rp 1000.", "error");
     return;
   }
 
@@ -127,7 +221,7 @@ function editMenu(index) {
   kopi[index].harga = newPrice;
   simpanData();
   tampilanMenu();
-  alert("Menu berhasil diperbarui.");
+  showToast("Menu berhasil diperbarui.", "success");
 }
 
 function tambahMenu() {
@@ -136,7 +230,7 @@ function tambahMenu() {
   const inputStokEl = document.getElementById("stokMenu");
 
   if (!inputKopiEl || !inputHargaEl) {
-    alert("Element input tidak ditemukan.");
+    showToast("Element input tidak ditemukan.", "error");
     return;
   }
 
@@ -145,17 +239,17 @@ function tambahMenu() {
   const inputStok = inputStokEl ? parseInt(inputStokEl.value, 10) : 10;
 
   if (!inputKopi) {
-    alert("Nama menu tidak boleh kosong.");
+    showToast("Nama menu tidak boleh kosong.", "error");
     return;
   }
 
   if (Number.isNaN(inputHarga) || inputHarga < 1000) {
-    alert("Harga menu harus angka dan minimal Rp 1000.");
+    showToast("Harga menu harus angka dan minimal Rp 1000.", "error");
     return;
   }
 
   if (Number.isNaN(inputStok) || inputStok < 1) {
-    alert("Stok harus angka valid dan minimal 1.");
+    showToast("Stok harus angka valid dan minimal 1.", "error");
     return;
   }
 
@@ -168,7 +262,7 @@ function tambahMenu() {
   inputHargaEl.value = "";
   if (inputStokEl) inputStokEl.value = "";
 
-  alert("Menu baru berhasil ditambahkan.");
+  showToast("Menu baru berhasil ditambahkan.", "success");
 }
 
 function hapusMenu() {
@@ -180,8 +274,11 @@ function hapusMenu() {
     document.getElementById("hasil").innerHTML;
     tampilanMenu();
     simpanData();
-    document.getElementById("hapus").value;
-  } else alert("menu tidak ada");
+    document.getElementById("hapus").value = "";
+    showToast("Menu berhasil dihapus", "success");
+  } else {
+    showToast("Menu tidak ada", "error");
+  }
 }
 
 const tampilanOrderan = () => {
@@ -210,7 +307,13 @@ const tampilanOrderan = () => {
 
   if (keranjang.length === 0) {
     output = `
-      <tr><td colspan="5" style="text-align:center; padding: 1rem;">Keranjang kosong</td></tr>
+      <tr><td colspan="5" style="text-align:center; padding: 2rem; color: #475569;">
+        <div style="display:flex; flex-direction:column; align-items:center; gap:0.6rem;">
+          <div style="font-size:2rem;">🛒</div>
+          <div style="font-weight:700;">Belum ada pesanan</div>
+          <div style="font-size:0.94rem;">Tambahkan menu dari daftar di sisi kiri.</div>
+        </div>
+      </td></tr>
     `;
   } else {
     output += `
@@ -234,13 +337,13 @@ function tambahOrderan() {
   const index = parseInt(nomorMenu, 10) - 1;
 
   if (Number.isNaN(index) || index < 0 || index >= kopi.length) {
-    alert("Nomor menu tidak valid.");
+    showToast("Nomor menu tidak valid.", "error");
     return;
   }
 
   const menuDipilih = kopi[index];
   if (menuDipilih.stok <= 0) {
-    alert("Maaf, stok menu ini sudah habis.");
+    showToast("Maaf, stok menu ini sudah habis.", "error");
     return;
   }
 
@@ -248,7 +351,7 @@ function tambahOrderan() {
 
   if (itemDitemukan) {
     if (itemDitemukan.qty + 1 > menuDipilih.stok) {
-      alert("Stok tidak cukup untuk menambah lagi.");
+      showToast("Stok tidak cukup untuk menambah lagi.", "error");
       return;
     }
     itemDitemukan.qty += 1;
@@ -299,7 +402,7 @@ const tambahQty = (index) => {
 
 function selesaikanPembayaran() {
   if (keranjang.length === 0) {
-    alert("Keranjang kosong. Tambahkan pesanan terlebih dahulu.");
+    showToast("Keranjang kosong. Tambahkan pesanan terlebih dahulu.", "error");
     return;
   }
 
@@ -319,7 +422,7 @@ function selesaikanPembayaran() {
     if (kopi[menuIndex].stok >= orderItem.qty) {
       kopi[menuIndex].stok -= orderItem.qty;
     } else {
-      alert(`Stok untuk ${orderItem.nama} tidak cukup. Transaksi dibatalkan.`);
+      showToast(`Stok untuk ${orderItem.nama} tidak cukup. Transaksi dibatalkan.`, "error");
       return;
     }
   }
@@ -367,7 +470,7 @@ function selesaikanPembayaran() {
 
   window.print();
   setTimeout(() => {
-    alert("Pesanan berhasil.");
+    showToast("Pesanan berhasil.", "success");
   }, 500);
 }
 
