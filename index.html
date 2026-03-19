@@ -2,77 +2,71 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="refresh" content="0;url=pages/login.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Redirect ke Login</title>
-    <link rel="stylesheet" href="assets/css/style.css" />
+    <title>KopiKita - Halaman Utama</title>
+    <link rel="stylesheet" href="assets/css/landing.css" />
   </head>
+
   <body>
-    <p>Redirecting ke <a href="login.html">login</a>...</p>
     <nav class="navbar">
-      <a class="brand" href="pages/login.html">KopiKita</a>
+      <a class="brand" href="index.html">KopiKita</a>
       <div class="nav-right">
+        <a href="pages/order.html">Order Sekarang</a>
         <a href="pages/admin.html">Admin</a>
-        <a href="pages/order.html">Order</a>
-        <a href="pages/login.html">Logout</a>
+        <a href="pages/login.html">Login</a>
       </div>
     </nav>
 
-    <div class="container">
-      <h1>📋 HALAMAN MENU</h1>
-
-      <div class="nav-links">
-        <a href="order.html">🛒 Halaman Order</a>
-      </div>
-
-      <!-- Add Menu Card -->
-      <div class="card">
-        <div class="card-header">
-          <h3>➕ Tambah Menu Baru</h3>
-        </div>
-        <div class="input-group">
-          <input type="text" id="menuBaru" placeholder="Masukan Nama Menu" />
-          <input
-            type="number"
-            id="hargaMenu"
-            placeholder="Masukan Harga Menu"
-          />
-          <button onclick="tambahMenu()" class="success">➕ Tambah Menu</button>
+    <header class="hero">
+      <div class="hero-content">
+        <h1>Selamat Datang di KopiKita</h1>
+        <p>
+          Nikmati rasa kopi terbaik dari biji pilihan. Temukan menu kopi favoritmu,
+          pesan cepat, dan rasakan kehangatan setiap tegukan.
+        </p>
+        <div class="hero-actions">
+          <a href="pages/order.html" class="btn btn-primary">Pesan Sekarang</a>
+          <a href="#about" class="btn btn-secondary">Pelajari Lebih Lanjut</a>
         </div>
       </div>
+    </header>
 
-      <!-- Menu List Card -->
-      <div class="card">
-        <div class="card-header">
-          <h3>📋 Daftar Menu</h3>
-        </div>
-        <button onclick="tampilanMenu()" class="success">
-          🔄 Refresh Menu
-        </button>
-        <table>
-          <thead>
-            <tr>
-              <th>No</th>
-              <th>Nama Menu</th>
-              <th>Harga</th>
-            </tr>
-          </thead>
-          <tbody id="hasil"></tbody>
-        </table>
-      </div>
+    <main class="container">
+      <section id="about" class="section">
+        <h2>Tentang KopiKita</h2>
+        <p>
+          KopiKita adalah kedai kopi digital yang menghadirkan pengalaman
+          pemesanan sederhana dan menu lengkap. Kami mengutamakan kualitas biji
+          kopi, pelayanan cepat, dan harga yang ramah kantong.
+        </p>
+      </section>
 
-      <!-- Delete Menu Card -->
-      <div class="card">
-        <div class="card-header">
-          <h3>🗑️ Hapus Menu</h3>
-        </div>
-        <div class="input-group">
-          <input type="number" id="hapus" placeholder="Masukan Nomor Menu" />
-          <button onclick="hapusMenu()" class="danger">🗑️ Hapus Menu</button>
-        </div>
-      </div>
-    </div>
+      <section class="section cards">
+        <article class="card">
+          <h3>Menu Unggulan</h3>
+          <p>Espresso, Americano, Cappuccino, Latte, dan banyak lagi.</p>
+        </article>
+        <article class="card">
+          <h3>Pesan Online</h3>
+          <p>Langsung ke halaman order dan pilih menu favoritmu dalam 1 klik.</p>
+        </article>
+        <article class="card">
+          <h3>Kelebihan Kami</h3>
+          <p>
+            Biji kopi pilihan, barista berpengalaman, dan pengiriman cepat.
+          </p>
+        </article>
+      </section>
 
-    <script src="script.js"></script>
+      <section class="section contact">
+        <h2>Hubungi Kami</h2>
+        <p>Alamat: Jl. Kopi #123, Kota Rasa</p>
+        <p>Telepon: +62 812 3456 7890</p>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>&copy; 2026 KopiKita. Semua hak cipta dilindungi.</p>
+    </footer>
   </body>
 </html>
