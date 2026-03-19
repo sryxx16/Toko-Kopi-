@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Register KopiKita</title>
-    <link rel="stylesheet" href="../assets/css/style.css" />
+    <link rel="stylesheet" href="../assets/css/auth.css" />
   </head>
   <body>
     <nav class="navbar">
@@ -14,7 +14,7 @@
       </div>
     </nav>
 
-    <div class="container">
+    <main class="container">
       <div class="page-title">
         <h1>✍️ Register Akun</h1>
         <span class="badge-status">Role: Baru</span>
@@ -25,9 +25,9 @@
           <h3>Daftar sebagai Admin/Kasir</h3>
         </div>
         <div class="input-group">
-          <input type="text" id="regUsername" placeholder="Username" />
-          <input type="password" id="regPassword" placeholder="Password" />
-          <select id="regRole">
+          <input type="text" id="regUsername" placeholder="Username" aria-label="Username" />
+          <input type="password" id="regPassword" placeholder="Password" aria-label="Password" />
+          <select id="regRole" aria-label="Role">
             <option value="kasir">Kasir</option>
             <option value="admin">Admin</option>
           </select>
@@ -35,7 +35,12 @@
         </div>
         <p id="registerMessage"></p>
       </div>
-    </div>
+
+      <div class="card">
+        <p>Sudah punya akun? <a href="login.html">Login</a></p>
+        <p><a href="../index.html">Kembali ke Beranda</a></p>
+      </div>
+    </main>
 
     <script src="../assets/js/login.js"></script>
   </body>
