@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Halaman Menu - Kasir</title>
+    <link rel="stylesheet" href="../assets/css/style.css" />
+  </head>
+  <body onload="initAdminPage()">
+    <nav class="navbar">
+      <a class="brand" href="admin.html">KopiKita</a>
+      <div class="nav-right">
+        <a href="javascript:void(0);" onclick="showLaporan()">Lihat Laporan Penjualan</a>
+        <a href="javascript:void(0);" onclick="logout()">Ganti Shift (Logout)</a>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="page-title">
+        <h1>📋 HALAMAN ADMIN</h1>
+        <span class="badge-status">Role: Admin</span>
+      </div>
+
+      <div class="nav-links">
+        <a href="order.html">🛒 Halaman Order</a>
+      </div>
+
+      <div id="laporanArea" class="card" style="display: none;">
+        <div class="card-header">
+          <h3>📈 Laporan Penjualan</h3>
+        </div>
+        <div id="laporanContent"></div>
+      </div>
+
+      <!-- Add Menu Card -->
+      <div class="card">
+        <div class="card-header">
+          <h3>➕ Tambah Menu Baru</h3>
+        </div>
+        <div class="input-group">
+          <input type="text" id="menuBaru" placeholder="Masukan Nama Menu" />
+          <input
+            type="number"
+            id="hargaMenu"
+            placeholder="Masukan Harga Menu"
+          />
+          <button onclick="tambahMenu()" class="success">➕ Tambah Menu</button>
+        </div>
+      </div>
+
+      <!-- Menu List Card -->
+      <div class="card">
+        <div class="card-header">
+          <h3>📋 Daftar Menu</h3>
+        </div>
+        <button onclick="tampilanMenu()" class="success">
+          🔄 Refresh Menu
+        </button>
+        <table>
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Nama Menu</th>
+              <th>Harga</th>
+            </tr>
+          </thead>
+          <tbody id="hasil"></tbody>
+        </table>
+      </div>
+
+      <!-- Delete Menu Card -->
+      <div class="card">
+        <div class="card-header">
+          <h3>🗑️ Hapus Menu</h3>
+        </div>
+        <div class="input-group">
+          <input type="number" id="hapus" placeholder="Masukan Nomor Menu" />
+          <button onclick="hapusMenu()" class="danger">🗑️ Hapus Menu</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../assets/js/script.js"></script>
+  </body>
+</html>

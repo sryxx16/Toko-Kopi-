@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Halaman Order - Kasir</title>
+    <link rel="stylesheet" href="../assets/css/style.css" />
+  </head>
+  <body onload="initKasirPage()">
+    <nav class="navbar">
+      <a class="brand" href="order.html">KopiKita</a>
+      <div class="nav-right">
+        <a href="admin.html">Admin</a>
+        <a href="order.html">Order</a>
+        <a href="javascript:void(0);" onclick="logout()">Ganti Shift (Logout)</a>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="page-title">
+        <h1>🛒 HALAMAN KASIR</h1>
+        <span class="badge-status">Role: Kasir</span>
+      </div>
+
+      <div class="dashboard-grid">
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <h3>📋 Daftar Menu</h3>
+            </div>
+            <button onclick="tampilanMenu()" class="success">🔄 Refresh Menu</button>
+            <table>
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>Nama Menu</th>
+                  <th>Harga</th>
+                </tr>
+              </thead>
+              <tbody id="hasil"></tbody>
+            </table>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3>➕ Tambah Pesanan</h3>
+            </div>
+            <div class="input-group">
+              <input type="number" id="tambahOrder" placeholder="Masukan Nomor Menu" />
+              <button onclick="tambahOrderan()" class="success">➕ Tambah ke Pesanan</button>
+            </div>
+            <p class="status-message">Masukan nomor menu lalu klik tombol tambah.</p>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <h3>📦 Pesanan Saat Ini</h3>
+            </div>
+            <button onclick="tampilanOrderan()" class="success">🔄 Refresh Orderan</button>
+            <table>
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>Nama Menu</th>
+                  <th>Harga</th>
+                  <th>Qty</th>
+                  <th>SubTotal</th>
+                </tr>
+              </thead>
+              <tbody id="hasilOrder"></tbody>
+            </table>
+            <div class="total-section">
+              <h2>Total Bayar</h2>
+              <span id="totalBayar">Rp 0</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3>💳 Pembayaran</h3>
+            </div>
+            <button onclick="selesaikanPembayaran()" class="success">✅ Selesaikan Pembayaran</button>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3>🗑️ Hapus Pesanan</h3>
+            </div>
+            <div class="input-group">
+              <input type="number" id="hapusOrder" placeholder="Masukan Nomor Urut Pesanan" />
+              <button onclick="hapusOrderan()" class="danger">🗑️ Hapus Orderan</button>
+            </div>
+          </div>
+
+          <div id="strukArea"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="../assets/js/script.js"></script>
+  </body>
+</html>
