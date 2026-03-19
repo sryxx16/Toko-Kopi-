@@ -1,19 +1,59 @@
 ﻿const authStorageKey = "kopiAppAuth";
 const userStorageKey = "kopiAppUsers";
 
+// --- ENKRIPSI SEDERHANA ---
+function encodePassword(raw) {
+  try {
+    return btoa(raw);
+  } catch {
+    return raw;
+  }
+}
+
+function decodePassword(encoded) {
+  try {
+    return atob(encoded);
+  } catch {
+    return encoded;
+  }
+}
+
+// --- MANAGEMENT USER ---
 function getUsers() {
   try {
     const raw = localStorage.getItem(userStorageKey);
+    let users;
     if (!raw) {
-      const defaultUsers = [
-        { username: "admin", password: "admin123", role: "admin" },
-        { username: "kasir", password: "kasir123", role: "kasir" },
+      users = [
+        { username: "admin", password: encodePassword("admin123"), role: "admin" },
+        { username: "kasir", password: encodePassword("kasir123"), role: "kasir" },
       ];
-      localStorage.setItem(userStorageKey, JSON.stringify(defaultUsers));
-      return defaultUsers;
+      localStorage.setItem(userStorageKey, JSON.stringify(users));
+      return users;
     }
 
-    return JSON.parse(raw);
+    users = JSON.parse(raw);
+    if (!Array.isArray(users)) {
+      users = [];
+    }
+
+    const hasAdmin = users.some((user) => user.username?.toLowerCase() === "admin");
+    const hasKasir = users.some((user) => user.username?.toLowerCase() === "kasir");
+
+    if (!hasAdmin || !hasKasir) {
+      const defaults = [
+        { username: "admin", password: encodePassword("admin123"), role: "admin" },
+        { username: "kasir", password: encodePassword("kasir123"), role: "kasir" },
+      ];
+      users = [
+        ...users.filter((u) => u.username && u.role),
+        ...(hasAdmin ? [] : [defaults[0]]),
+        ...(hasKasir ? [] : [defaults[1]]),
+      ];
+      localStorage.setItem(userStorageKey, JSON.stringify(users));
+    }
+
+    return users;
   } catch (error) {
     console.error("Gagal membaca data pengguna", error);
     return [];
@@ -26,15 +66,17 @@ function setUsers(users) {
 
 function findUser(username) {
   const users = getUsers();
-  return users.find((user) => user.username.toLowerCase() === username.toLowerCase());
+  return users.find(
+    (user) => user.username.toLowerCase() === username.toLowerCase(),
+  );
 }
 
+// --- AUTH STATE ---
 function getAuthState() {
   try {
     const raw = localStorage.getItem(authStorageKey);
     return raw ? JSON.parse(raw) : null;
   } catch (error) {
-    console.error("Gagal membaca auth state", error);
     return null;
   }
 }
@@ -48,33 +90,19 @@ function clearAuthState() {
   localStorage.removeItem(authStorageKey);
 }
 
-function requireAuth(allowedRoles = []) {
-  const auth = getAuthState();
-
-  if (!auth || !allowedRoles.includes(auth.role)) {
-    clearAuthState();
-    window.location.replace("login.html");
-    return false;
-  }
-
-  return true;
-}
-
+// --- REDIRECTION ---
 function redirectAfterLogin() {
   const auth = getAuthState();
   if (!auth) return;
 
-  if (auth.role === "admin") {
-    window.location.replace("admin.html");
-    return;
-  }
-
-  if (auth.role === "kasir") {
-    window.location.replace("order.html");
-    return;
+  // Cek jika sedang di halaman login, baru redirect
+  if (window.location.pathname.includes("login.html")) {
+    const target = auth.role === "admin" ? "admin.html" : "order.html";
+    window.location.replace(target);
   }
 }
 
+// --- CORE FUNCTIONS ---
 function handleLogin() {
   const usernameInput = document.getElementById("username");
   const passwordInput = document.getElementById("password");
@@ -85,35 +113,51 @@ function handleLogin() {
   const username = usernameInput.value.trim();
   const password = passwordInput.value;
 
+  // 1. Validasi Input Kosong
   if (!username || !password) {
     message.textContent = "Username dan password wajib diisi.";
     message.style.color = "#dc2626";
     return;
   }
 
+  // 2. Cari User
   const user = findUser(username);
-
   if (!user) {
-    message.textContent = "Akun tidak ditemukan, silakan register terlebih dahulu.";
+    message.textContent = "Akun tidak ditemukan.";
     message.style.color = "#dc2626";
     return;
   }
 
-  if (user.password !== password) {
+  // 3. Cek Password (Decode dulu data dari storage)
+  const decodedPassword = decodePassword(user.password);
+  const isPasswordValid = decodedPassword === password || user.password === password;
+
+  if (!isPasswordValid) {
     message.textContent = "Password salah. Coba lagi.";
     message.style.color = "#dc2626";
     return;
   }
 
-  const role = user.role;
-  setAuthState(role);
-  const target = role === "admin" ? "admin.html" : "order.html";
+  // Jika password belum dalam encoding Base64, simpan kembali dengan enkripsi agar konsisten
+  if (user.password !== encodePassword(password)) {
+    const users = getUsers().map((u) =>
+      u.username.toLowerCase() === user.username.toLowerCase()
+        ? { ...u, password: encodePassword(password) }
+        : u,
+    );
+    setUsers(users);
+  }
 
-  message.textContent = `Berhasil login sebagai ${role}. Mengalihkan...`;
+  // 4. Berhasil Login
+  setAuthState(user.role);
+  message.textContent = `Berhasil login sebagai ${user.role}. Mengalihkan...`;
   message.style.color = "green";
+
   setTimeout(() => {
-    window.location.replace(target);
-  }, 500);
+    window.location.replace(
+      user.role === "admin" ? "admin.html" : "order.html",
+    );
+  }, 800);
 }
 
 function handleRegister() {
@@ -128,30 +172,40 @@ function handleRegister() {
   const password = passwordInput.value.trim();
   const role = roleInput.value;
 
-  if (!username || !password) {
-    message.textContent = "Username dan password tidak boleh kosong.";
+  // Keamanan: Hanya admin yang bisa daftar (Opsional: Matikan jika ingin bebas daftar)
+  const currentAuth = getAuthState();
+  if (!currentAuth || currentAuth.role !== "admin") {
+    message.textContent = "Hanya admin yang dapat mendaftarkan user baru.";
+    message.style.color = "#dc2626";
+    return;
+  }
+
+  if (password.length < 8) {
+    message.textContent = "Password minimal 8 karakter.";
     message.style.color = "#dc2626";
     return;
   }
 
   if (findUser(username)) {
-    message.textContent = "Username sudah terdaftar. Silakan login.";
+    message.textContent = "Username sudah terdaftar.";
     message.style.color = "#dc2626";
     return;
   }
 
   const users = getUsers();
-  users.push({ username, password, role });
+  users.push({
+    username,
+    password: encodePassword(password),
+    role,
+  });
   setUsers(users);
 
-  message.textContent = "Registrasi berhasil! Silakan login.";
+  message.textContent = "Registrasi berhasil!";
   message.style.color = "green";
-  usernameInput.value = "";
-  passwordInput.value = "";
 
   setTimeout(() => {
-    window.location.replace("login.html");
-  }, 1300);
+    window.location.reload(); // Refresh halaman setelah daftar
+  }, 1000);
 }
 
 function logout() {
@@ -159,6 +213,8 @@ function logout() {
   window.location.replace("login.html");
 }
 
-window.addEventListener("DOMContentLoaded", () => {
+// Jalankan pengecekan saat halaman dimuat
+document.addEventListener("DOMContentLoaded", () => {
+  getUsers(); // Pastikan data dummy terbuat
   redirectAfterLogin();
 });

@@ -201,3 +201,58 @@ tbody tr:hover {
   .card { padding: 1rem; }
   .input-group { flex-direction: column; }
 }
+
+#strukArea {
+  padding: 10px;
+}
+
+#strukArea .struk-wrapper {
+  max-width: 80mm;
+  width: 100%;
+  font-family: 'Courier New', monospace;
+  white-space: nowrap;
+}
+
+#strukArea .struk-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+#strukArea .struk-separator {
+  font-family: 'Courier New', monospace;
+  opacity: .65;
+  margin: 4px 0;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+    display: none !important;
+  }
+
+  #strukArea,
+  #strukArea * {
+    visibility: visible;
+    display: block !important;
+  }
+
+  #strukArea {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  #strukArea .card,
+  #strukArea table,
+  #strukArea p,
+  #strukArea h3,
+  #strukArea .struk-wrapper,
+  #strukArea .struk-row {
+    visibility: visible;
+    display: block !important;
+  }
+}

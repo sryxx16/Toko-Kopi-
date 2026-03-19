@@ -1,8 +1,9 @@
 ﻿let kopi = JSON.parse(localStorage.getItem("kopi")) || [
-  { nama: "kapal api", harga: 5000 },
-  { nama: "liong", harga: 7000 },
-  { nama: "oplet", harga: 6000 },
+  { nama: "kapal api", harga: 5000, stok: 15 },
+  { nama: "liong", harga: 7000, stok: 14 },
+  { nama: "oplet", harga: 6000, stok: 20 },
 ];
+kopi = kopi.map((item) => ({ nama: item.nama || "", harga: item.harga || 0, stok: item.stok != null ? item.stok : 10 }));
 let keranjang = JSON.parse(localStorage.getItem("keranjang")) || [];
 let riwayatPesanan = JSON.parse(localStorage.getItem("riwayatPesanan")) || [];
 
@@ -45,13 +46,16 @@ function showLaporan() {
   }
 
   laporanTarget.style.display = "block";
+  let totalPendapatan = 0;
   let html = `<table><thead><tr><th>#</th><th>Tanggal</th><th>Item</th><th>Total</th></tr></thead><tbody>`;
   riwayatPesanan.forEach((entry, idx) => {
     const tgl = new Date(entry.date).toLocaleString("id-ID");
     const namaItem = entry.items.map((i) => `${i.nama} x${i.qty}`).join(", ");
     html += `<tr><td>${idx + 1}</td><td>${tgl}</td><td>${namaItem}</td><td>Rp ${entry.total.toLocaleString("id-ID")}</td></tr>`;
+    totalPendapatan += entry.total;
   });
   html += `</tbody></table>`;
+  html += `<div style="margin-top: 1rem; padding: 0.65rem; border-top: 2px solid #d1b79e; font-weight: 700;">Total Pendapatan: Rp ${totalPendapatan.toLocaleString("id-ID")}</div>`;
   laporanContent.innerHTML = html;
 }
 
@@ -86,6 +90,8 @@ const tampilanMenu = () => {
       <td>${index + 1}</td>
       <td>${item.nama}</td>
       <td>Rp ${item.harga.toLocaleString("id-ID")}</td>
+      <td>${item.stok}</td>
+      <td><button class="btn-edit" onclick="editMenu(${index})">Edit</button></td>
     </tr>
     `;
     totalHarga += item.harga;
@@ -97,25 +103,72 @@ const tampilanMenu = () => {
   }
 };
 
-function tambahMenu() {
-  let inputKopi = document.getElementById("menuBaru").value;
-  let inputHarga = document.getElementById("hargaMenu").value;
-
-  if (inputKopi !== "" && inputHarga !== "") {
-    let menuBaru = {
-      nama: inputKopi,
-      harga: parseInt(inputHarga),
-    };
-    kopi.push(menuBaru);
-
-    document.getElementById("hasil").innerHTML = "";
-    tampilanMenu();
-    simpanData();
-    document.getElementById("menuBaru").value = "";
-    document.getElementById("hargaMenu").value = "";
-  } else {
-    alert(" data belum di masukan ");
+function editMenu(index) {
+  if (index < 0 || index >= kopi.length) {
+    alert("Menu tidak ditemukan.");
+    return;
   }
+
+  const current = kopi[index];
+  const newName = prompt("Ubah nama menu:", current.nama);
+  if (newName === null || newName.trim() === "") {
+    alert("Nama menu tidak boleh kosong.");
+    return;
+  }
+
+  const newPriceInput = prompt("Ubah harga menu:", current.harga);
+  const newPrice = parseInt(newPriceInput, 10);
+  if (isNaN(newPrice) || newPrice < 1000) {
+    alert("Harga harus angka valid minimal Rp 1000.");
+    return;
+  }
+
+  kopi[index].nama = newName.trim();
+  kopi[index].harga = newPrice;
+  simpanData();
+  tampilanMenu();
+  alert("Menu berhasil diperbarui.");
+}
+
+function tambahMenu() {
+  const inputKopiEl = document.getElementById("menuBaru");
+  const inputHargaEl = document.getElementById("hargaMenu");
+  const inputStokEl = document.getElementById("stokMenu");
+
+  if (!inputKopiEl || !inputHargaEl) {
+    alert("Element input tidak ditemukan.");
+    return;
+  }
+
+  const inputKopi = inputKopiEl.value.trim();
+  const inputHarga = parseInt(inputHargaEl.value, 10);
+  const inputStok = inputStokEl ? parseInt(inputStokEl.value, 10) : 10;
+
+  if (!inputKopi) {
+    alert("Nama menu tidak boleh kosong.");
+    return;
+  }
+
+  if (Number.isNaN(inputHarga) || inputHarga < 1000) {
+    alert("Harga menu harus angka dan minimal Rp 1000.");
+    return;
+  }
+
+  if (Number.isNaN(inputStok) || inputStok < 1) {
+    alert("Stok harus angka valid dan minimal 1.");
+    return;
+  }
+
+  kopi.push({ nama: inputKopi, harga: inputHarga, stok: inputStok });
+
+  tampilanMenu();
+  simpanData();
+
+  inputKopiEl.value = "";
+  inputHargaEl.value = "";
+  if (inputStokEl) inputStokEl.value = "";
+
+  alert("Menu baru berhasil ditambahkan.");
 }
 
 function hapusMenu() {
@@ -186,9 +239,18 @@ function tambahOrderan() {
   }
 
   const menuDipilih = kopi[index];
+  if (menuDipilih.stok <= 0) {
+    alert("Maaf, stok menu ini sudah habis.");
+    return;
+  }
+
   const itemDitemukan = keranjang.find((item) => item.nama === menuDipilih.nama);
 
   if (itemDitemukan) {
+    if (itemDitemukan.qty + 1 > menuDipilih.stok) {
+      alert("Stok tidak cukup untuk menambah lagi.");
+      return;
+    }
     itemDitemukan.qty += 1;
   } else {
     keranjang.push({ nama: menuDipilih.nama, harga: menuDipilih.harga, qty: 1 });
@@ -241,67 +303,72 @@ function selesaikanPembayaran() {
     return;
   }
 
+  if (!confirm("Apakah pesanan sudah benar?")) {
+    return;
+  }
+
   const totalBayar = keranjang.reduce((acc, item) => acc + item.harga * item.qty, 0);
   const now = new Date();
+  const auth = getAuthState();
+  const aktor = auth?.role ? auth.role.toUpperCase() : "GUEST";
+
+  // Update stok masing-masing menu
+  for (let orderItem of keranjang) {
+    const menuIndex = kopi.findIndex((item) => item.nama === orderItem.nama);
+    if (menuIndex < 0) continue;
+    if (kopi[menuIndex].stok >= orderItem.qty) {
+      kopi[menuIndex].stok -= orderItem.qty;
+    } else {
+      alert(`Stok untuk ${orderItem.nama} tidak cukup. Transaksi dibatalkan.`);
+      return;
+    }
+  }
+
   const transaksi = {
     date: now.toISOString(),
     items: [...keranjang],
     total: totalBayar,
+    kasir: aktor,
   };
 
   riwayatPesanan.push(transaksi);
   keranjang = [];
   simpanData();
   tampilanOrderan();
+  tampilanMenu();
 
   const strukArea = document.getElementById("strukArea");
-  if (strukArea) {
-    const strukRows = transaksi.items
-      .map((item) =>
-        `
-        <tr>
-          <td>${item.nama}</td>
-          <td>${item.qty}</td>
-          <td>Rp ${item.harga.toLocaleString("id-ID")}</td>
-          <td>Rp ${(item.harga * item.qty).toLocaleString("id-ID")}</td>
-        </tr>
-      `,
-      )
-      .join("");
+  if (!strukArea) return;
 
-    strukArea.innerHTML = `
-      <div class="card" style="max-width: 420px; margin: 0 auto;">
-        <div class="card-header">
-          <h3>🧾 Struk Pembayaran</h3>
-        </div>
-        <p><strong>Tanggal:</strong> ${now.toLocaleString("id-ID")}</p>
-        <table>
-          <thead>
-            <tr>
-              <th>Menu</th>
-              <th>Qty</th>
-              <th>Harga</th>
-              <th>Sub</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${strukRows}
-            <tr>
-              <td colspan="3" style="font-weight: bold; text-align: right;">Total</td>
-              <td style="font-weight: bold; color: #1f7a35;">Rp ${totalBayar.toLocaleString("id-ID")}</td>
-            </tr>
-          </tbody>
-        </table>
+  const strukRows = transaksi.items
+    .map((item) =>
+      `
+      <div class="struk-row">
+        <span>${item.nama}</span>
+        <span>${item.qty} x Rp ${item.harga.toLocaleString("id-ID")}</span>
+        <span>Rp ${(item.harga * item.qty).toLocaleString("id-ID")}</span>
       </div>
-    `;
+      <div class="struk-separator">---------------------------------------------</div>
+    `,
+    )
+    .join("");
 
-    setTimeout(() => {
-      window.print();
-    }, 250);
+  strukArea.innerHTML = `
+    <div class="struk-wrapper" style="width:80mm; max-width:100%; margin:0 auto; font-family:'Courier New', monospace; font-size:13px;">
+      <div style="text-align:center; font-weight:bold; font-size:1.1rem; margin-bottom:0.5rem;">KopiKita</div>
+      <div style="text-align:center; margin-bottom:0.5rem;">Barista: ${aktor}</div>
+      <div style="text-align:center; margin-bottom:0.5rem;">${now.toLocaleString("id-ID")}</div>
+      <div class="struk-separator">=================================</div>
+      ${strukRows}
+      <div class="struk-separator">=================================</div>
+      <div style="text-align:right; font-weight:bold;">TOTAL: Rp ${totalBayar.toLocaleString("id-ID")}</div>
+    </div>
+  `;
 
-    setTimeout(() => {
-      alert("Pesanan berhasil dibayar dan dimasukkan ke riwayat.");
-    }, 500);
-  }
+  window.print();
+  setTimeout(() => {
+    alert("Pesanan berhasil.");
+  }, 500);
 }
+
 
