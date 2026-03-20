@@ -113,35 +113,13 @@
                     <th class="px-3 py-2 text-left">No</th>
                     <th class="px-3 py-2 text-left">Nama Menu</th>
                     <th class="px-3 py-2 text-left">Harga</th>
-                    <th class="px-3 py-2 text-left">Aksi</th> </tr>
+                    <th class="px-3 py-2 text-center">Stok</th>
+                    <th class="px-3 py-2 text-center">Aksi</th>
                   </tr>
                 </thead>
                 <tbody id="hasil" class="text-slate-700"></tbody>
               </table>
             </div>
-          </section>
-
-          <section
-            class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm"
-          >
-            <h2 class="font-semibold text-lg mb-3">➕ Tambah Pesanan</h2>
-            <div class="flex gap-2">
-              <input
-                id="tambahOrder"
-                type="number"
-                placeholder="Nomor Menu"
-                class="flex-1 rounded-lg border border-slate-300 px-3 py-2 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none"
-              />
-              <button
-                onclick="tambahOrderan()"
-                class="rounded-lg bg-emerald-500 text-white px-4 py-2 hover:bg-emerald-600"
-              >
-                Tambah
-              </button>
-            </div>
-            <p class="text-xs text-slate-500 mt-2">
-              Masukan nomor menu lalu klik tambah.
-            </p>
           </section>
         </div>
 
@@ -167,6 +145,7 @@
                     <th class="px-3 py-2">Harga</th>
                     <th class="px-3 py-2">Qty</th>
                     <th class="px-3 py-2">SubTotal</th>
+                    <th class="px-3 py-2">Aksi</th>
                   </tr>
                 </thead>
                 <tbody id="hasilOrder" class="text-slate-700"></tbody>
@@ -182,71 +161,65 @@
           </section>
 
           <section
-            class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-3"
+            class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4"
           >
-            <div class="grid gap-3">
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label
-                    for="uangDiterima"
-                    class="block mb-1 text-sm font-medium text-slate-700"
-                    >Uang Diterima (Rp)</label
-                  >
-                  <input
-                    id="uangDiterima"
-                    type="number"
-                    min="0"
-                    value="0"
-                    oninput="updateKembalian()"
-                    class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none"
-                  />
-                </div>
-                <div>
-                  <label
-                    for="metodePembayaran"
-                    class="block mb-1 text-sm font-medium text-slate-700"
-                    >Metode Pembayaran</label
-                  >
-                  <select
-                    id="metodePembayaran"
-                    class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none"
-                  >
-                    <option value="Tunai">Tunai</option>
-                    <option value="QRIS">QRIS</option>
-                    <option value="Transfer">Transfer</option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="text-right font-semibold text-slate-700">
-                Kembalian: <span id="kembalianVal">Rp 0</span>
-              </div>
-
-              <button
-                onclick="selesaikanPembayaran()"
-                class="w-full rounded-lg bg-indigo-600 text-white py-2 hover:bg-indigo-700"
-              >
-                ✅ Selesaikan Pembayaran
-              </button>
-            </div>
-
             <div>
-              <h3 class="font-semibold mb-2">🗑️ Hapus Pesanan</h3>
-              <div class="flex gap-2">
-                <input
-                  id="hapusOrder"
-                  type="number"
-                  placeholder="Nomor Urut Pesanan"
-                  class="flex-1 rounded-lg border border-slate-300 px-3 py-2 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none"
-                />
-                <button
-                  onclick="hapusOrderan()"
-                  class="rounded-lg bg-rose-500 text-white px-4 py-2 hover:bg-rose-600"
+              <label
+                for="nomorLapak"
+                class="block mb-1 text-sm font-medium text-slate-700"
+                >Nomor Lapak / Meja</label
+              >
+              <input
+                id="nomorLapak"
+                type="text"
+                placeholder="Contoh: Meja 4 / Takeaway"
+                class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none"
+              />
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label
+                  for="uangDiterima"
+                  class="block mb-1 text-sm font-medium text-slate-700"
+                  >Uang Diterima (Rp)</label
                 >
-                  Hapus
-                </button>
+                <input
+                  id="uangDiterima"
+                  type="number"
+                  min="0"
+                  value="0"
+                  oninput="updateKembalian()"
+                  class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none"
+                />
+              </div>
+              <div>
+                <label
+                  for="metodePembayaran"
+                  class="block mb-1 text-sm font-medium text-slate-700"
+                  >Metode</label
+                >
+                <select
+                  id="metodePembayaran"
+                  class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none"
+                >
+                  <option value="Tunai">Tunai</option>
+                  <option value="QRIS">QRIS</option>
+                  <option value="Transfer">Transfer</option>
+                </select>
               </div>
             </div>
+
+            <div class="text-right font-semibold text-slate-700">
+              Kembalian: <span id="kembalianVal">Rp 0</span>
+            </div>
+
+            <button
+              onclick="selesaikanPembayaran()"
+              class="w-full rounded-lg bg-indigo-600 text-white py-3 font-bold hover:bg-indigo-700 shadow-md"
+            >
+              ✅ Selesaikan Pembayaran
+            </button>
           </section>
 
           <div id="strukArea"></div>
