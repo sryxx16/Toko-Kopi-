@@ -3,258 +3,343 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Halaman Admin - Pengelolaan Menu Kopi</title>
+    <title>Halaman Admin - Pengelolaan Menu</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-      @media print {
-        body * {
-          visibility: hidden !important;
-        }
-        #laporanArea,
-        #laporanArea * {
-          visibility: visible !important;
-        }
-        #laporanArea {
-          position: absolute !important;
-          top: 0 !important;
-          left: 0 !important;
-          width: 80mm !important;
-          margin: 0 !important;
-          padding: 0 !important;
-          background: #fff !important;
-        }
-      }
-      #laporanArea .laporan-wrapper {
-        width: 80mm;
-        max-width: 80mm;
-        margin: 0;
-        padding: 8px;
-        box-sizing: border-box;
-        font-family: "Courier New", monospace;
-        font-size: 12px;
-        color: #000;
-      }
-      #laporanArea .laporan-separator {
-        border-bottom: 1px dashed #000;
-        margin: 4px 0;
-      }
-      #laporanArea table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-      #laporanArea th,
-      #laporanArea td {
-        padding: 4px 2px;
-        border-bottom: 1px solid #ccc;
-      }
-      #laporanArea .summary-row {
-        font-weight: 700;
-        margin-top: 6px;
-        display: flex;
-        justify-content: space-between;
-      }
-    </style>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script>
+      tailwind.config = { darkMode: "class" };
+    </script>
   </head>
-  <body onload="initAdminPage()" class="bg-slate-50 text-slate-800">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <header class="flex flex-wrap justify-between items-center mb-6">
-        <a href="admin.html" class="text-2xl font-bold text-emerald-700"
-          >KopiKita</a
+  <body
+    onload="initAdminPage()"
+    class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-200 transition-colors duration-300"
+  >
+    <nav
+      class="sticky top-0 z-40 w-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors"
+    >
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center gap-2">
+            <div
+              class="w-10 h-10 bg-emerald-100 dark:bg-emerald-900 rounded-xl flex items-center justify-center"
+            >
+              <i
+                class="ph-fill ph-coffee text-2xl text-emerald-600 dark:text-emerald-400"
+              ></i>
+            </div>
+            <span class="text-xl font-bold tracking-tight">KopiKita</span>
+          </div>
+
+          <div class="hidden md:flex items-center space-x-2">
+            <a
+              href="admin.html"
+              class="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 font-semibold transition-all"
+              ><i class="ph-fill ph-package text-lg"></i> Menu</a
+            >
+            <a
+              href="laporan.html"
+              class="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 font-medium transition-all active:scale-95"
+              ><i class="ph ph-chart-line-up text-lg"></i> Laporan</a
+            >
+            <a
+              href="users.html"
+              class="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 font-medium transition-all active:scale-95"
+              ><i class="ph ph-users text-lg"></i> Pegawai</a
+            >
+            <a
+              href="order.html"
+              class="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 font-medium transition-all active:scale-95"
+              ><i class="ph ph-shopping-cart text-lg"></i> Kasir</a
+            >
+          </div>
+
+          <div class="flex items-center gap-3">
+            <button
+              onclick="toggleDarkMode()"
+              class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all active:scale-95"
+              title="Ganti Tema"
+            >
+              <i
+                class="ph-fill ph-moon text-xl text-slate-600"
+                id="themeIcon"
+              ></i>
+            </button>
+            <button
+              onclick="logout()"
+              class="flex items-center gap-2 px-4 py-2 rounded-lg bg-rose-500 text-white font-medium hover:bg-rose-600 shadow-sm hover:shadow transition-all active:scale-95"
+            >
+              <i class="ph ph-sign-out text-lg"></i>
+              <span class="hidden sm:block">Logout</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+        <div
+          class="group bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-between transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-default"
         >
-        <div class="flex items-center gap-3">
-          <a
-            href="admin.html"
-            class="px-3 py-2 rounded-lg bg-emerald-100 text-emerald-700"
-            >Admin</a
+          <div>
+            <p
+              class="text-sm text-slate-500 dark:text-slate-400 font-semibold mb-1 uppercase tracking-wider"
+            >
+              Pendapatan Hari Ini
+            </p>
+            <h3
+              id="pendapatanHariIni"
+              class="text-3xl font-bold text-emerald-600 dark:text-emerald-400"
+            >
+              Rp 0
+            </h3>
+          </div>
+          <div
+            class="w-14 h-14 flex items-center justify-center bg-emerald-50 dark:bg-emerald-900/30 rounded-full group-hover:scale-110 transition-transform duration-300"
           >
-          <a href="order.html" class="px-3 py-2 rounded-lg hover:bg-slate-100"
-            >Order</a
-          >
-          <button
-            onclick="logout()"
-            class="px-3 py-2 rounded-lg bg-rose-500 text-white hover:bg-rose-600"
-          >
-            Ganti Shift (Logout)
-          </button>
+            <i class="ph-fill ph-wallet text-3xl text-emerald-500"></i>
+          </div>
         </div>
-      </header>
 
-      <div
-        class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 mb-6"
-      >
-        <div class="flex justify-between items-center flex-wrap gap-4">
-          <h1 class="text-2xl font-bold">🧑‍💼 Halaman Admin</h1>
-          <span
-            class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700"
-            >Role: Admin</span
+        <div
+          class="group bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-between transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-default"
+        >
+          <div>
+            <p
+              class="text-sm text-slate-500 dark:text-slate-400 font-semibold mb-1 uppercase tracking-wider"
+            >
+              Transaksi Hari Ini
+            </p>
+            <h3
+              id="transaksiHariIni"
+              class="text-3xl font-bold text-indigo-600 dark:text-indigo-400"
+            >
+              0
+            </h3>
+          </div>
+          <div
+            class="w-14 h-14 flex items-center justify-center bg-indigo-50 dark:bg-indigo-900/30 rounded-full group-hover:scale-110 transition-transform duration-300"
           >
+            <i class="ph-fill ph-receipt text-3xl text-indigo-500"></i>
+          </div>
         </div>
       </div>
 
-      <div
-        id="laporanArea"
-        class="hidden bg-white rounded-2xl shadow-sm border border-slate-200 p-5 mb-6"
-      >
-        <h2 class="text-lg font-semibold mb-3">📈 Laporan Penjualan</h2>
-        <div id="laporanContent" class="text-slate-700"></div>
-      </div>
-
-      <div class="grid xl:grid-cols-2 gap-6">
-        <div class="space-y-6">
+      <div class="grid xl:grid-cols-3 gap-6">
+        <div class="xl:col-span-2 space-y-6">
           <section
-            class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm"
+            class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 transition-colors overflow-hidden"
           >
-            <div class="flex justify-between items-center mb-3">
-              <h2 class="font-semibold text-lg">📋 Daftar Menu Kopi</h2>
+            <div
+              class="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center"
+            >
+              <h2 class="font-bold text-lg flex items-center gap-2">
+                <i class="ph-fill ph-list-dashes text-indigo-500"></i> Daftar
+                Menu Kopi
+              </h2>
               <button
                 onclick="tampilkanMenuAdmin()"
-                class="px-3 py-1 text-sm rounded-lg bg-emerald-500 text-white hover:bg-emerald-600"
+                class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 font-medium transition-all active:scale-95"
               >
-                Refresh
+                <i class="ph ph-arrows-clockwise"></i> Refresh
               </button>
             </div>
-            <div class="overflow-x-auto rounded-lg border border-slate-200">
+            <div class="overflow-x-auto">
               <table class="min-w-full text-sm">
-                <thead class="bg-slate-100 text-slate-600">
+                <thead
+                  class="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400"
+                >
                   <tr>
-                    <th class="px-3 py-2 text-left">No</th>
-                    <th class="px-3 py-2 text-left">Nama Menu</th>
-                    <th class="px-3 py-2 text-left">Harga</th>
-                    <th class="px-3 py-2 text-left">Stok</th>
-                    <th class="px-3 py-2 text-left">Aksi</th>
+                    <th class="px-5 py-3 text-left font-semibold">No</th>
+                    <th class="px-5 py-3 text-left font-semibold">Nama Menu</th>
+                    <th class="px-5 py-3 text-left font-semibold">Harga</th>
+                    <th class="px-5 py-3 text-center font-semibold">Stok</th>
+                    <th class="px-5 py-3 text-center font-semibold">Aksi</th>
                   </tr>
                 </thead>
-                <tbody id="hasil" class="text-slate-700"></tbody>
+                <tbody
+                  id="hasil"
+                  class="text-slate-700 dark:text-slate-300 divide-y divide-slate-100 dark:divide-slate-700/50"
+                ></tbody>
               </table>
             </div>
           </section>
-
-          <section
-            class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm"
-          >
-            <h2 class="font-semibold text-lg mb-3">➕ Tambah Menu Kopi</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
-              <input
-                type="text"
-                id="menuBaru"
-                placeholder="Nama Menu"
-                class="rounded-lg border border-slate-300 px-3 py-2 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none"
-              />
-              <input
-                type="number"
-                id="hargaMenu"
-                placeholder="Harga"
-                class="rounded-lg border border-slate-300 px-3 py-2 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none"
-              />
-              <input
-                type="number"
-                id="stokMenu"
-                placeholder="Stok"
-                min="1"
-                class="rounded-lg border border-slate-300 px-3 py-2 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none"
-              />
-            </div>
-            <button
-              onclick="tambahMenu()"
-              class="rounded-lg bg-emerald-500 text-white px-4 py-2 hover:bg-emerald-600"
-            >
-              Tambah Menu
-            </button>
-          </section>
         </div>
 
         <div class="space-y-6">
           <section
-            class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm"
+            class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 transition-colors"
           >
-            <div class="flex justify-between items-center mb-3">
-              <h2 class="font-semibold text-lg">📈 Statistik & Laporan</h2>
-              <button
-                id="laporanBtn"
-                onclick="toggleLaporan()"
-                class="px-3 py-1 text-sm rounded-lg bg-emerald-500 text-white hover:bg-emerald-600"
-              >
-                Lihat Laporan
-              </button>
+            <h2 class="font-bold text-lg mb-5 flex items-center gap-2">
+              <i class="ph-fill ph-plus-circle text-emerald-500"></i> Tambah
+              Menu Baru
+            </h2>
+            <div class="space-y-4 mb-6">
+              <div>
+                <label
+                  class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1"
+                  >Nama Menu</label
+                >
+                <div class="relative">
+                  <i
+                    class="ph ph-coffee absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                  ></i>
+                  <input
+                    type="text"
+                    id="menuBaru"
+                    placeholder="Contoh: Kopi Susu"
+                    class="w-full rounded-xl border border-slate-300 dark:border-slate-600 dark:bg-slate-900 pl-10 pr-3 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 transition-all"
+                  />
+                </div>
+              </div>
+              <div>
+                <label
+                  class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1"
+                  >Harga (Rp)</label
+                >
+                <div class="relative">
+                  <i
+                    class="ph ph-tag absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                  ></i>
+                  <input
+                    type="number"
+                    id="hargaMenu"
+                    placeholder="15000"
+                    class="w-full rounded-xl border border-slate-300 dark:border-slate-600 dark:bg-slate-900 pl-10 pr-3 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+                  />
+                </div>
+              </div>
+              <div>
+                <label
+                  class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1"
+                  >Stok Awal</label
+                >
+                <div class="relative">
+                  <i
+                    class="ph ph-stack absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                  ></i>
+                  <input
+                    type="number"
+                    id="stokMenu"
+                    placeholder="50"
+                    min="1"
+                    class="w-full rounded-xl border border-slate-300 dark:border-slate-600 dark:bg-slate-900 pl-10 pr-3 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+                  />
+                </div>
+              </div>
+              <div>
+                <label
+                  class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1"
+                  >Kategori</label
+                >
+                <div class="relative">
+                  <i
+                    class="ph ph-tag absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                  ></i>
+                  <select
+                    id="kategoriMenu"
+                    class="w-full rounded-xl border border-slate-300 dark:border-slate-600 dark:bg-slate-900 pl-10 pr-3 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+                  >
+                    <option value="">-- Pilih Kategori --</option>
+                    <option value="kopi">☕ Kopi</option>
+                    <option value="non-kopi">🥤 Non-Kopi</option>
+                    <option value="snack">🍪 Snack</option>
+                  </select>
+                </div>
+              </div>
             </div>
-            <div
-              id="laporan"
-              class="p-3 rounded-lg border border-slate-200 bg-slate-50 text-slate-700"
-            ></div>
-          </section>
-
-          <section
-            class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm"
-          >
-            <h2 class="font-semibold text-lg mb-3">🖨️ Cetak Laporan</h2>
             <button
-              onclick="window.print()"
-              class="w-full rounded-lg bg-indigo-600 text-white py-2 hover:bg-indigo-700"
+              onclick="tambahMenu()"
+              class="w-full flex justify-center items-center gap-2 rounded-xl bg-emerald-500 text-white px-4 py-3 hover:bg-emerald-600 font-bold shadow-md hover:shadow-lg transition-all active:scale-95"
             >
-              Cetak
+              <i class="ph-bold ph-floppy-disk text-lg"></i> Simpan Menu
             </button>
           </section>
         </div>
       </div>
     </div>
+
     <div
       id="editModal"
-      class="fixed inset-0 bg-slate-900 bg-opacity-50 hidden flex items-center justify-center z-50"
+      class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 bg-slate-900/40 backdrop-blur-sm"
     >
       <div
-        class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 transform transition-all"
+        id="editModalContent"
+        class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md p-6 transform scale-95 translate-y-4 opacity-0 transition-all duration-300"
       >
-        <h2 class="text-xl font-bold text-slate-800 mb-4">✏️ Edit Menu Kopi</h2>
+        <h2
+          class="text-xl font-bold text-slate-800 dark:text-white mb-5 flex items-center gap-2"
+        >
+          <i class="ph-fill ph-pencil-simple text-blue-500"></i> Edit Menu
+        </h2>
 
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1"
+            <label
+              class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1"
               >Nama Menu</label
             >
             <input
               type="text"
               id="editNama"
-              class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition"
+              class="w-full rounded-xl border border-slate-300 dark:border-slate-600 dark:bg-slate-900 px-3 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 transition-all"
             />
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1"
+              <label
+                class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1"
                 >Harga (Rp)</label
               >
               <input
                 type="number"
                 id="editHarga"
                 min="1000"
-                class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition"
+                class="w-full rounded-xl border border-slate-300 dark:border-slate-600 dark:bg-slate-900 px-3 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 transition-all"
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1"
+              <label
+                class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1"
                 >Stok</label
               >
               <input
                 type="number"
                 id="editStok"
                 min="0"
-                class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition"
+                class="w-full rounded-xl border border-slate-300 dark:border-slate-600 dark:bg-slate-900 px-3 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 transition-all"
               />
             </div>
           </div>
+          <div>
+            <label
+              class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1"
+              >Kategori</label
+            >
+            <select
+              id="editKategori"
+              class="w-full rounded-xl border border-slate-300 dark:border-slate-600 dark:bg-slate-900 px-3 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+            >
+              <option value="">-- Pilih Kategori --</option>
+              <option value="kopi">☕ Kopi</option>
+              <option value="non-kopi">🥤 Non-Kopi</option>
+              <option value="snack">🍪 Snack</option>
+            </select>
+          </div>
         </div>
 
-        <div class="mt-6 flex justify-end gap-3">
+        <div class="mt-8 flex justify-end gap-3">
           <button
             onclick="tutupModalEdit()"
-            class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 font-semibold transition"
+            class="px-5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 font-semibold transition-all active:scale-95"
           >
             Batal
           </button>
           <button
             onclick="simpanEditMenu()"
-            class="px-4 py-2 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 font-semibold transition"
+            class="px-5 py-2.5 flex items-center gap-2 rounded-xl bg-blue-500 text-white hover:bg-blue-600 font-semibold shadow-md transition-all active:scale-95"
           >
-            Simpan
+            <i class="ph-bold ph-check"></i> Simpan
           </button>
         </div>
       </div>

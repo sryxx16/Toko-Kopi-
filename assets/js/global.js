@@ -1,67 +1,59 @@
+// --- STATE DATA ---
+let users = JSON.parse(localStorage.getItem("users")) || [
+  { id: 1, username: "admin", password: "123", role: "admin" },
+  { id: 2, username: "kasir", password: "123", role: "kasir" },
+];
+
 let kopi = JSON.parse(localStorage.getItem("kopi")) || [
-  { nama: "kapal api", harga: 5000, stok: 15 },
-  { nama: "liong", harga: 7000, stok: 14 },
-  { nama: "oplet", harga: 6000, stok: 20 },
+  { nama: "kapal api", harga: 5000, stok: 15, kategori: "kopi" },
+  { nama: "liong", harga: 7000, stok: 14, kategori: "kopi" },
+  { nama: "oplet", harga: 6000, stok: 20, kategori: "kopi" },
 ];
 
 kopi = kopi.map((item) => ({
   nama: item.nama || "",
   harga: item.harga || 0,
   stok: item.stok != null ? item.stok : 10,
+  kategori: item.kategori || "kopi",
 }));
 
 let keranjang = JSON.parse(localStorage.getItem("keranjang")) || [];
 let riwayatPesanan = JSON.parse(localStorage.getItem("riwayatPesanan")) || [];
 
+// --- FUNGSI TOAST ---
 function showToast(message, type = "success") {
   let toastArea = document.getElementById("toastArea");
   if (!toastArea) {
     toastArea = document.createElement("div");
     toastArea.id = "toastArea";
-    toastArea.style.position = "fixed";
-    toastArea.style.top = "1rem";
-    toastArea.style.right = "1rem";
-    toastArea.style.zIndex = "9999";
-    toastArea.style.display = "flex";
-    toastArea.style.flexDirection = "column";
-    toastArea.style.gap = "0.5rem";
+    toastArea.className = "fixed top-4 right-4 z-[9999] flex flex-col gap-2";
     document.body.appendChild(toastArea);
   }
 
   const toast = document.createElement("div");
-  toast.textContent = message;
-  toast.style.padding = "0.85rem 1rem";
-  toast.style.borderRadius = "10px";
-  toast.style.boxShadow = "0 4px 14px rgba(0, 0, 0, 0.18)";
-  toast.style.color = "#fff";
-  toast.style.minWidth = "220px";
-  toast.style.fontWeight = "600";
-  toast.style.opacity = "0";
-  toast.style.transition = "opacity 0.2s ease, transform 0.2s ease";
-  toast.style.transform = "translateY(-12px)";
 
-  if (type === "error") {
-    toast.style.background = "#ef4444";
-  } else if (type === "primary") {
-    toast.style.background = "#3730a3";
-  } else {
-    toast.style.background = "#10b981";
-  }
+  // Kasih ikon di dalam toast
+  let iconHtml =
+    type === "error"
+      ? '<i class="ph-fill ph-warning-circle text-xl"></i>'
+      : '<i class="ph-fill ph-check-circle text-xl"></i>';
+
+  toast.innerHTML = `<div class="flex items-center gap-2">${iconHtml} <span>${message}</span></div>`;
+  toast.className = `px-4 py-3 rounded-xl shadow-lg text-white font-semibold min-w-[250px] transform transition-all duration-300 opacity-0 -translate-y-4 ${type === "error" ? "bg-rose-500" : "bg-emerald-500"}`;
 
   toastArea.appendChild(toast);
 
   requestAnimationFrame(() => {
-    toast.style.opacity = "1";
-    toast.style.transform = "translateY(0)";
+    toast.classList.remove("opacity-0", "-translate-y-4");
   });
 
   setTimeout(() => {
-    toast.style.opacity = "0";
-    toast.style.transform = "translateY(-12px)";
-    setTimeout(() => toastArea.removeChild(toast), 250);
-  }, 3500);
+    toast.classList.add("opacity-0", "-translate-y-4");
+    setTimeout(() => toastArea.removeChild(toast), 300);
+  }, 3000);
 }
 
+// --- FUNGSI AUTENTIKASI ---
 const authStorageKey = "kopiAppAuth";
 
 function getAuthState() {
@@ -69,7 +61,6 @@ function getAuthState() {
     const rawAuth = localStorage.getItem(authStorageKey);
     return rawAuth ? JSON.parse(rawAuth) : null;
   } catch (error) {
-    console.error("Auth parsing error", error);
     return null;
   }
 }
@@ -93,4 +84,43 @@ function simpanData() {
   localStorage.setItem("kopi", JSON.stringify(kopi));
   localStorage.setItem("keranjang", JSON.stringify(keranjang));
   localStorage.setItem("riwayatPesanan", JSON.stringify(riwayatPesanan));
+  localStorage.setItem("users", JSON.stringify(users));
 }
+
+// --- FITUR DARK MODE DENGAN ICON UPDATE ---
+function updateThemeIcon() {
+  const icon = document.getElementById("themeIcon");
+  if (!icon) return;
+  if (document.documentElement.classList.contains("dark")) {
+    icon.className = "ph-fill ph-sun text-xl text-amber-500"; // Ikon Matahari kuning
+  } else {
+    icon.className = "ph-fill ph-moon text-xl text-indigo-500"; // Ikon Bulan ungu
+  }
+}
+
+function initTheme() {
+  if (
+    localStorage.theme === "dark" ||
+    (!("theme" in localStorage) &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches)
+  ) {
+    document.documentElement.classList.add("dark");
+  } else {
+    document.documentElement.classList.remove("dark");
+  }
+  // Kasih delay dikit biar DOM ke-load sebelum ganti icon
+  setTimeout(updateThemeIcon, 100);
+}
+
+function toggleDarkMode() {
+  if (document.documentElement.classList.contains("dark")) {
+    document.documentElement.classList.remove("dark");
+    localStorage.theme = "light";
+  } else {
+    document.documentElement.classList.add("dark");
+    localStorage.theme = "dark";
+  }
+  updateThemeIcon();
+}
+
+initTheme();

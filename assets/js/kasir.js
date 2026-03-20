@@ -1,3 +1,85 @@
+// --- STATE TAMBAHAN UNTUK FITUR BARU ---
+let kategoriAktif = "semua";
+let kataKunci = "";
+let diskonAktif = 0; // Diskon desimal (0.2 = 20%)
+const PPN_RATE = 0.11; // PPN 11%
+let totalAkhirGlobal = 0; // Total setelah diskon & pajak
+
+// --- FUNGSI INIT & EVENT LISTENER ---
+function initKasirPage() {
+  if (!requireAuth(["kasir", "admin"])) return; // Admin juga bisa akses order
+  tampilkanMenuKasir();
+  tampilanOrderan();
+
+  // Setup Event Listener Pencarian
+  const searchInput = document.getElementById("searchInput");
+  if (searchInput) {
+    searchInput.addEventListener("input", (e) => {
+      kataKunci = e.target.value.toLowerCase();
+      tampilkanMenuKasir();
+    });
+  }
+
+  // Setup Event Listener Kategori
+  const btnCategories = document.querySelectorAll(".btn-category");
+  btnCategories.forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      const targetBtn = e.currentTarget; // Pakai currentTarget biar icon di dalam tombol ga ganggu click
+
+      // Reset semua tombol ke style default (Abu-abu / Dark)
+      btnCategories.forEach((b) => {
+        b.classList.remove(
+          "bg-emerald-500",
+          "text-white",
+          "border-transparent",
+        );
+        b.classList.add(
+          "bg-slate-100",
+          "dark:bg-slate-900",
+          "text-slate-600",
+          "dark:text-slate-400",
+        );
+      });
+
+      // Aktifkan tombol yang diklik (Hijau)
+      targetBtn.classList.remove(
+        "bg-slate-100",
+        "dark:bg-slate-900",
+        "text-slate-600",
+        "dark:text-slate-400",
+      );
+      targetBtn.classList.add(
+        "bg-emerald-500",
+        "text-white",
+        "border-transparent",
+      );
+
+      kategoriAktif = targetBtn.dataset.category;
+      tampilkanMenuKasir();
+    });
+  });
+
+  // Setup Event Listener Promo
+  const btnApplyPromo = document.getElementById("btnApplyPromo");
+  if (btnApplyPromo) {
+    btnApplyPromo.addEventListener("click", () => {
+      const code = document.getElementById("promoCode").value.toUpperCase();
+      if (code === "PROMO20") {
+        diskonAktif = 0.2;
+        showToast("Berhasil! Diskon 20% diaplikasikan.", "success");
+      } else if (code === "") {
+        diskonAktif = 0;
+        showToast("Promo dilepas.", "primary");
+      } else {
+        diskonAktif = 0;
+        showToast("Kode promo tidak valid.", "error");
+      }
+      tampilanOrderan();
+    });
+  }
+}
+
+// --- FUNGSI RENDER MENU ---
 function tampilkanMenuKasir() {
   const hasil = document.getElementById("hasil");
   if (!hasil) return;
@@ -5,31 +87,43 @@ function tampilkanMenuKasir() {
   let output = "";
 
   kopi.forEach((item, index) => {
-    const isHabis = item.stok <= 0;
-    output += `
-      <tr class="border-b border-slate-100 hover:bg-slate-50">
-        <td class="px-3 py-3">${index + 1}</td>
-        <td class="px-3 py-3 font-medium text-slate-800">${item.nama}</td>
-        <td class="px-3 py-3 text-emerald-600 font-medium">Rp ${item.harga.toLocaleString("id-ID")}</td>
-        <td class="px-3 py-3 text-center font-bold ${isHabis ? "text-rose-500" : "text-slate-700"}">${isHabis ? "Habis" : item.stok}</td>
-        <td class="px-3 py-3 text-center">
-          <button onclick="tambahOrderanIndex(${index})" class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded hover:bg-emerald-200 text-xs font-bold transition ${isHabis ? "opacity-50 cursor-not-allowed" : ""}" ${isHabis ? "disabled" : ""}>
-            + Tambah
-          </button>
-        </td>
-      </tr>
-    `;
+    const isMatchSearch = item.nama.toLowerCase().includes(kataKunci);
+
+    // Logika Kategori (Gunakan field .kategori langsung)
+    let isMatchCategory = true;
+    if (kategoriAktif !== "semua") {
+      isMatchCategory = item.kategori === kategoriAktif;
+    }
+
+    if (isMatchSearch && isMatchCategory) {
+      const isHabis = item.stok <= 0;
+      output += `
+        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group">
+          <td class="px-4 py-3 font-semibold">${item.nama}</td>
+          <td class="px-4 py-3 text-emerald-600 dark:text-emerald-400 font-bold tracking-wide">Rp ${item.harga.toLocaleString("id-ID")}</td>
+          <td class="px-4 py-3 text-center">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold ${isHabis ? "bg-rose-100 text-rose-700 dark:bg-rose-900 dark:text-rose-300" : "bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300"}">
+              ${isHabis ? "Habis" : item.stok}
+            </span>
+          </td>
+          <td class="px-4 py-3 text-center">
+            <button onclick="tambahOrderanIndex(${index})" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 rounded-lg hover:bg-emerald-200 dark:hover:bg-emerald-800 text-xs font-bold transition-all active:scale-95 ${isHabis ? "opacity-50 cursor-not-allowed" : ""}" ${isHabis ? "disabled" : ""}>
+              <i class="ph-bold ph-plus"></i> Tambah
+            </button>
+          </td>
+        </tr>
+      `;
+    }
   });
+
+  if (output === "") {
+    output = `<tr><td colspan="4" class="text-center py-8 text-slate-400 dark:text-slate-500"><i class="ph-fill ph-magnifying-glass text-4xl mb-2"></i><br>Menu tidak ditemukan.</td></tr>`;
+  }
 
   hasil.innerHTML = output;
 }
 
-function initKasirPage() {
-  if (!requireAuth(["kasir"])) return;
-  tampilkanMenuKasir();
-  tampilkanOrderan();
-}
-
+// --- FUNGSI RENDER KERANJANG ---
 function tampilanOrderan() {
   const hasilOr = document.getElementById("hasilOrder");
   if (!hasilOr) return;
@@ -39,71 +133,84 @@ function tampilanOrderan() {
   keranjang.forEach((item, index) => {
     const subTotal = item.harga * item.qty;
     output += `
-      <tr class="border-b border-slate-100 hover:bg-slate-50">
-        <td class="px-3 py-3">${index + 1}</td>
-        <td class="px-3 py-3 font-medium text-slate-800">${item.nama}</td>
-        <td class="px-3 py-3 text-slate-600">Rp ${item.harga.toLocaleString("id-ID")}</td>
+      <tr class="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
         <td class="px-3 py-3">
-          <div class="flex items-center gap-2">
-            <button onclick="kurangQty(${index})" class="w-6 h-6 rounded bg-rose-100 text-rose-600 font-bold hover:bg-rose-200">-</button>
-            <span class="w-4 text-center font-semibold">${item.qty}</span>
-            <button onclick="tambahQty(${index})" class="w-6 h-6 rounded bg-emerald-100 text-emerald-600 font-bold hover:bg-emerald-200">+</button>
+          <div class="font-bold text-slate-800 dark:text-slate-200 leading-tight">${item.nama}</div>
+          <div class="text-xs text-slate-500 dark:text-slate-400">Rp ${item.harga.toLocaleString("id-ID")}</div>
+        </td>
+        <td class="px-3 py-3">
+          <div class="flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-900 rounded-lg p-1 w-max mx-auto border border-slate-200 dark:border-slate-700">
+            <button onclick="kurangQty(${index})" class="w-6 h-6 flex items-center justify-center rounded bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 shadow-sm hover:text-rose-500 transition-colors"><i class="ph-bold ph-minus"></i></button>
+            <span class="w-4 text-center font-bold text-sm">${item.qty}</span>
+            <button onclick="tambahQty(${index})" class="w-6 h-6 flex items-center justify-center rounded bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 shadow-sm hover:text-emerald-500 transition-colors"><i class="ph-bold ph-plus"></i></button>
           </div>
         </td>
-        <td class="px-3 py-3 font-bold text-emerald-600">Rp ${subTotal.toLocaleString("id-ID")}</td>
+        <td class="px-3 py-3 font-bold text-emerald-600 dark:text-emerald-400 text-right">Rp ${subTotal.toLocaleString("id-ID")}</td>
         <td class="px-3 py-3 text-center">
-          <button onclick="hapusDariKeranjang(${index})" class="text-rose-500 hover:text-rose-700 transition" title="Hapus Item">🗑️</button>
+          <button onclick="hapusDariKeranjang(${index})" class="text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 transition-colors p-1" title="Hapus Item">
+            <i class="ph-fill ph-trash text-lg"></i>
+          </button>
         </td>
       </tr>
     `;
   });
 
-  const totalBayar = keranjang.reduce(
-    (acc, item) => acc + item.harga * item.qty,
-    0,
-  );
-
   if (keranjang.length === 0) {
     output = `
-      <tr><td colspan="6" style="text-align:center; padding: 2rem; color: #475569;">
-        <div style="display:flex; flex-direction:column; align-items:center; gap:0.6rem;">
-          <div style="font-size:2rem;">🛒</div>
-          <div style="font-weight:700;">Belum ada pesanan</div>
-          <div style="font-size:0.94rem;">Pilih menu dari daftar di sisi kiri.</div>
-        </div>
+      <tr><td colspan="4" class="text-center py-10 text-slate-400 dark:text-slate-500">
+        <i class="ph-fill ph-shopping-cart text-5xl mb-2 opacity-50"></i>
+        <p class="font-medium text-sm">Keranjang masih kosong</p>
       </td></tr>
     `;
   }
 
   hasilOr.innerHTML = output;
 
-  const totalBayarEl = document.getElementById("totalBayar");
-  if (totalBayarEl) {
-    totalBayarEl.textContent = `Rp ${totalBayar.toLocaleString("id-ID")}`;
-  }
+  // Kalkulasi Harga
+  const subtotal = keranjang.reduce(
+    (acc, item) => acc + item.harga * item.qty,
+    0,
+  );
+  const nominalDiskon = subtotal * diskonAktif;
+  const subtotalSetelahDiskon = subtotal - nominalDiskon;
+  const nominalPPN = subtotalSetelahDiskon * PPN_RATE;
+
+  totalAkhirGlobal = subtotalSetelahDiskon + nominalPPN;
+
+  // Update Tampilan Harga
+  const subtotalDisplay = document.getElementById("subtotalDisplay");
+  const discountDisplay = document.getElementById("discountDisplay");
+  const taxDisplay = document.getElementById("taxDisplay");
+  const totalDisplay = document.getElementById("totalDisplay");
+
+  if (subtotalDisplay)
+    subtotalDisplay.textContent = `Rp ${subtotal.toLocaleString("id-ID")}`;
+  if (discountDisplay)
+    discountDisplay.textContent = `- Rp ${nominalDiskon.toLocaleString("id-ID")}`;
+  if (taxDisplay)
+    taxDisplay.textContent = `Rp ${nominalPPN.toLocaleString("id-ID")}`;
+  if (totalDisplay)
+    totalDisplay.textContent = `Rp ${totalAkhirGlobal.toLocaleString("id-ID")}`;
+
+  updateKembalian();
 }
 
+// --- FUNGSI MANAJEMEN KERANJANG ---
 function hapusDariKeranjang(index) {
   if (!keranjang[index]) return;
-
-  if (confirm(`Hapus ${keranjang[index].nama} dari pesanan?`)) {
-    keranjang.splice(index, 1);
-    tampilanOrderan();
-    simpanData();
-    updateKembalian();
-    showToast("Item dihapus dari pesanan", "success");
-  }
+  keranjang.splice(index, 1);
+  tampilanOrderan();
+  simpanData();
+  showToast("Item dihapus dari pesanan", "primary");
 }
 
 function kurangQty(index) {
   if (!keranjang[index]) return;
-
   if (keranjang[index].qty > 1) {
     keranjang[index].qty -= 1;
   } else {
     keranjang.splice(index, 1);
   }
-
   tampilanOrderan();
   simpanData();
 }
@@ -113,15 +220,9 @@ function tambahQty(index) {
   if (!menuDiKeranjang) return;
 
   const menuDiKopi = kopi.find((item) => item.nama === menuDiKeranjang.nama);
-  if (!menuDiKopi) {
-    showToast("Menu tidak ditemukan.", "error");
-    return;
-  }
-
-  if (menuDiKeranjang.qty + 1 > menuDiKopi.stok) {
-    showToast("Stok tidak mencukupi.", "error");
-    return;
-  }
+  if (!menuDiKopi) return showToast("Menu tidak ditemukan.", "error");
+  if (menuDiKeranjang.qty + 1 > menuDiKopi.stok)
+    return showToast("Stok tidak mencukupi.", "error");
 
   menuDiKeranjang.qty += 1;
   tampilanOrderan();
@@ -130,24 +231,16 @@ function tambahQty(index) {
 
 function tambahOrderanIndex(index) {
   const menuDipilih = kopi[index];
-  if (!menuDipilih) {
-    showToast("Menu tidak ditemukan.", "error");
-    return;
-  }
-
-  if (menuDipilih.stok <= 0) {
-    showToast(`Maaf, stok ${menuDipilih.nama} sudah habis.`, "error");
-    return;
-  }
+  if (!menuDipilih) return showToast("Menu tidak ditemukan.", "error");
+  if (menuDipilih.stok <= 0)
+    return showToast(`Stok ${menuDipilih.nama} habis.`, "error");
 
   const itemDitemukan = keranjang.find(
     (item) => item.nama === menuDipilih.nama,
   );
   if (itemDitemukan) {
-    if (itemDitemukan.qty + 1 > menuDipilih.stok) {
-      showToast(`Stok tidak cukup! Sisa stok: ${menuDipilih.stok}`, "error");
-      return;
-    }
+    if (itemDitemukan.qty + 1 > menuDipilih.stok)
+      return showToast(`Stok tidak cukup!`, "error");
     itemDitemukan.qty += 1;
   } else {
     keranjang.push({
@@ -159,14 +252,10 @@ function tambahOrderanIndex(index) {
 
   tampilanOrderan();
   simpanData();
-  showToast(`${menuDipilih.nama} ditambahkan ke keranjang`, "success");
 }
 
+// --- FUNGSI PEMBAYARAN & KEMBALIAN ---
 function updateKembalian() {
-  const totalBayar = keranjang.reduce(
-    (acc, item) => acc + item.harga * item.qty,
-    0,
-  );
   const uangDiterimaEl = document.getElementById("uangDiterima");
   const kembalianEl = document.getElementById("kembalianVal");
 
@@ -174,29 +263,26 @@ function updateKembalian() {
 
   const uangDiterima = Number(uangDiterimaEl.value);
   if (Number.isNaN(uangDiterima) || uangDiterima === 0) {
-    kembalianEl.innerHTML = `<span class="text-slate-700">Rp 0</span>`;
+    kembalianEl.innerHTML = `Rp 0`;
+    kembalianEl.className = "text-xl font-bold text-slate-800 dark:text-white";
     return;
   }
 
-  if (uangDiterima < totalBayar) {
-    const kurang = totalBayar - uangDiterima;
-    kembalianEl.innerHTML = `<span class="text-rose-500 font-bold">Kurang: Rp ${kurang.toLocaleString("id-ID")}</span>`;
+  if (uangDiterima < totalAkhirGlobal) {
+    const kurang = totalAkhirGlobal - uangDiterima;
+    kembalianEl.innerHTML = `Kurang Rp ${kurang.toLocaleString("id-ID")}`;
+    kembalianEl.className = "text-xl font-bold text-rose-500";
   } else {
-    const kembalian = uangDiterima - totalBayar;
-    kembalianEl.innerHTML = `<span class="text-emerald-600 font-bold">Rp ${kembalian.toLocaleString("id-ID")}</span>`;
+    const kembalian = uangDiterima - totalAkhirGlobal;
+    kembalianEl.innerHTML = `Rp ${kembalian.toLocaleString("id-ID")}`;
+    kembalianEl.className =
+      "text-xl font-bold text-emerald-600 dark:text-emerald-400";
   }
 }
 
 function selesaikanPembayaran() {
-  if (keranjang.length === 0) {
-    showToast("Keranjang kosong. Tambahkan pesanan terlebih dahulu.", "error");
-    return;
-  }
+  if (keranjang.length === 0) return showToast("Keranjang kosong!", "error");
 
-  const totalBayar = keranjang.reduce(
-    (acc, item) => acc + item.harga * item.qty,
-    0,
-  );
   const uangDiterimaEl = document.getElementById("uangDiterima");
   const metodePembayaranEl = document.getElementById("metodePembayaran");
   const nomorLapakEl = document.getElementById("nomorLapak");
@@ -210,39 +296,39 @@ function selesaikanPembayaran() {
       ? nomorLapakEl.value.trim()
       : "Takeaway";
 
-  if (Number.isNaN(uangDiterima) || uangDiterima < totalBayar) {
-    showToast("Uang diterima kurang dari total bayar.", "error");
-    return;
-  }
-
-  if (!confirm("Selesaikan pembayaran pesanan ini?")) {
-    return;
-  }
+  if (Number.isNaN(uangDiterima) || uangDiterima < totalAkhirGlobal)
+    return showToast("Uang bayar kurang!", "error");
 
   const now = new Date();
   const auth = getAuthState();
-  const aktor = auth?.role ? auth.role.toUpperCase() : "GUEST";
+  const aktor = auth?.username ? auth.username : "GUEST";
 
+  // Kurangi stok
   for (let orderItem of keranjang) {
     const menuIndex = kopi.findIndex((item) => item.nama === orderItem.nama);
     if (menuIndex < 0) continue;
     if (kopi[menuIndex].stok >= orderItem.qty) {
       kopi[menuIndex].stok -= orderItem.qty;
     } else {
-      showToast(
-        `Stok untuk ${orderItem.nama} tidak cukup. Transaksi dibatalkan.`,
-        "error",
-      );
-      return;
+      return showToast(`Stok ${orderItem.nama} tidak cukup. Batal.`, "error");
     }
   }
 
-  const kembalian = uangDiterima - totalBayar;
+  const kembalian = uangDiterima - totalAkhirGlobal;
+  const subtotal = keranjang.reduce(
+    (acc, item) => acc + item.harga * item.qty,
+    0,
+  );
+  const nominalDiskon = subtotal * diskonAktif;
+  const nominalPPN = (subtotal - nominalDiskon) * PPN_RATE;
 
   const transaksi = {
     date: now.toISOString(),
     items: [...keranjang],
-    totalBayar,
+    subtotal: subtotal,
+    diskon: nominalDiskon,
+    pajak: nominalPPN,
+    totalBayar: totalAkhirGlobal,
     uangDiterima,
     kembalian,
     metodePembayaran,
@@ -251,9 +337,13 @@ function selesaikanPembayaran() {
   };
 
   riwayatPesanan.push(transaksi);
-  keranjang = [];
-  simpanData();
 
+  keranjang = [];
+  diskonAktif = 0;
+  if (document.getElementById("promoCode"))
+    document.getElementById("promoCode").value = "";
+
+  simpanData();
   tampilanOrderan();
   tampilkanMenuKasir();
   updateKembalian();
@@ -261,42 +351,48 @@ function selesaikanPembayaran() {
   if (uangDiterimaEl) uangDiterimaEl.value = "0";
   if (nomorLapakEl) nomorLapakEl.value = "";
 
+  // Render Struk (Hidden untuk Print)
   const strukArea = document.getElementById("strukArea");
-  if (!strukArea) return;
-
-  const strukRows = transaksi.items
-    .map(
-      (item) => `
-      <div class="struk-row" style="display:flex; justify-content:space-between; margin-bottom:0.25rem;">
+  if (strukArea) {
+    const strukRows = transaksi.items
+      .map(
+        (item) => `
+      <div style="display:flex; justify-content:space-between; margin-bottom:0.25rem;">
         <span>${item.nama}</span>
-        <span>${item.qty} x ${item.harga.toLocaleString("id-ID")}</span>
+        <span>${item.qty}x</span>
         <span>${(item.harga * item.qty).toLocaleString("id-ID")}</span>
       </div>
     `,
-    )
-    .join("");
+      )
+      .join("");
 
-  strukArea.innerHTML = `
-    <div class="struk-wrapper" style="width:80mm; max-width:100%; margin:0 auto; font-family:'Courier New', monospace; font-size:13px;">
-      <div style="text-align:center; font-weight:bold; font-size:1.2rem; margin-bottom:0.2rem;">KopiKita</div>
-      <div style="text-align:center; margin-bottom:0.5rem; font-size:11px; color:#555;">Jl. Kopi #123, Kota Rasa</div>
-      <div class="struk-separator"></div>
-      <div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Tgl:</span> <span>${now.toLocaleDateString("id-ID")} ${now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</span></div>
-      <div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Kasir:</span> <span>${aktor}</span></div>
-      <div style="display:flex; justify-content:space-between; margin-bottom:2px; font-weight:bold;"><span>Lapak:</span> <span>${nomorLapak}</span></div>
-      <div class="struk-separator"></div>
-      ${strukRows}
-      <div class="struk-separator"></div>
-      <div style="display:flex; justify-content:space-between; font-weight:bold;"> <span>Total</span> <span>Rp ${totalBayar.toLocaleString("id-ID")}</span></div>
-      <div style="display:flex; justify-content:space-between;"> <span>Tunai/Metode</span> <span>Rp ${uangDiterima.toLocaleString("id-ID")} (${metodePembayaran})</span></div>
-      <div style="display:flex; justify-content:space-between;"> <span>Kembali</span> <span>Rp ${kembalian.toLocaleString("id-ID")}</span></div>
-      <div class="struk-separator"></div>
-      <div style="text-align:center; margin-top:0.5rem; font-style:italic;">Terima kasih telah berkunjung!</div>
-    </div>
-  `;
+    strukArea.innerHTML = `
+      <div class="struk-wrapper" style="width:80mm; font-family:'Courier New', monospace; font-size:12px;">
+        <div style="text-align:center; font-weight:bold; font-size:16px;">KopiKita</div>
+        <div style="text-align:center; color:#555; margin-bottom:5px;">Jl. Kopi #123, Kota Rasa</div>
+        <div class="struk-separator"></div>
+        <div style="display:flex; justify-content:space-between;"><span>Tgl:</span><span>${now.toLocaleDateString("id-ID")} ${now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</span></div>
+        <div style="display:flex; justify-content:space-between;"><span>Kasir:</span><span>${aktor}</span></div>
+        <div style="display:flex; justify-content:space-between;"><span>Lapak:</span><span>${nomorLapak}</span></div>
+        <div class="struk-separator"></div>
+        ${strukRows}
+        <div class="struk-separator"></div>
+        <div style="display:flex; justify-content:space-between;"><span>Subtotal</span><span>Rp ${subtotal.toLocaleString("id-ID")}</span></div>
+        ${nominalDiskon > 0 ? `<div style="display:flex; justify-content:space-between;"><span>Diskon</span><span>-Rp ${nominalDiskon.toLocaleString("id-ID")}</span></div>` : ""}
+        <div style="display:flex; justify-content:space-between;"><span>PPN (11%)</span><span>Rp ${nominalPPN.toLocaleString("id-ID")}</span></div>
+        <div class="struk-separator"></div>
+        <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:14px;"><span>Total</span><span>Rp ${totalAkhirGlobal.toLocaleString("id-ID")}</span></div>
+        <div style="display:flex; justify-content:space-between;"><span>Bayar (${metodePembayaran})</span><span>Rp ${uangDiterima.toLocaleString("id-ID")}</span></div>
+        <div style="display:flex; justify-content:space-between;"><span>Kembali</span><span>Rp ${kembalian.toLocaleString("id-ID")}</span></div>
+        <div class="struk-separator"></div>
+        <div style="text-align:center; margin-top:10px;">Terima kasih!</div>
+      </div>
+    `;
 
-  window.print();
-  setTimeout(() => {
-    showToast("Pesanan berhasil diselesaikan.", "success");
-  }, 500);
+    // Tampilkan notif lalu print struk
+    showToast("Transaksi berhasil disimpan!", "success");
+    setTimeout(() => {
+      window.print();
+    }, 500);
+  }
 }
