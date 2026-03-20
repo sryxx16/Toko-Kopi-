@@ -3,7 +3,11 @@
   { nama: "liong", harga: 7000, stok: 14 },
   { nama: "oplet", harga: 6000, stok: 20 },
 ];
-kopi = kopi.map((item) => ({ nama: item.nama || "", harga: item.harga || 0, stok: item.stok != null ? item.stok : 10 }));
+kopi = kopi.map((item) => ({
+  nama: item.nama || "",
+  harga: item.harga || 0,
+  stok: item.stok != null ? item.stok : 10,
+}));
 let keranjang = JSON.parse(localStorage.getItem("keranjang")) || [];
 let riwayatPesanan = JSON.parse(localStorage.getItem("riwayatPesanan")) || [];
 
@@ -56,7 +60,6 @@ function showToast(message, type = "success") {
   }, 3500);
 }
 
-
 const authStorageKey = "kopiAppAuth";
 
 function getAuthState() {
@@ -107,17 +110,32 @@ function showLaporan() {
   let totalTransaksi = riwayatPesanan.length;
   const salesCount = {};
 
+  const laporanPerTanggal = {};
+
   riwayatPesanan.forEach((entry) => {
-    totalPendapatan += entry.total || 0;
+    totalPendapatan += entry.totalBayar || 0;
     const entryDate = new Date(entry.date);
+
+    const tglKey = entryDate.toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
+
     if (isSameDay(entryDate, today)) {
-      totalPendapatanHariIni += entry.total || 0;
+      totalPendapatanHariIni += entry.totalBayar || 0;
     }
 
     (entry.items || []).forEach((i) => {
       if (!salesCount[i.nama]) salesCount[i.nama] = 0;
       salesCount[i.nama] += i.qty;
     });
+
+    if (!laporanPerTanggal[tglKey]) {
+      laporanPerTanggal[tglKey] = { totalBayar: 0, jumlahTransaksi: 0 };
+    }
+    laporanPerTanggal[tglKey].totalBayar += entry.totalBayar || 0;
+    laporanPerTanggal[tglKey].jumlahTransaksi += 1;
   });
 
   let bestSeller = "-";
@@ -125,12 +143,13 @@ function showLaporan() {
   Object.entries(salesCount).forEach(([nama, jumlah]) => {
     if (jumlah > bestSellerCount) {
       bestSellerCount = jumlah;
-      bestSeller = `${nama} (${jumlah} item)`;
+      bestSeller = `${nama} (${jumlah} cup)`;
     }
   });
 
+  // --- RENDER WIDGET ATAS ---
   let html = `
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
       <div class="p-4 rounded-xl border border-slate-200 bg-white shadow-sm">
         <div class="text-sm text-slate-500">Total Pendapatan Hari Ini</div>
         <div class="text-xl font-bold text-emerald-600">Rp ${totalPendapatanHariIni.toLocaleString("id-ID")}</div>
@@ -146,29 +165,32 @@ function showLaporan() {
     </div>
   `;
 
+  // --- RENDER TABEL REKAP HARIAN (Dengan Tombol Detail) ---
+  html += `<h3 class="font-bold text-lg mb-3 text-slate-800">📅 Rekap Pendapatan Harian</h3>`;
   html += `
-    <div class="overflow-x-auto">
-      <table class="min-w-full text-sm divide-y divide-slate-200">
-        <thead class="bg-slate-100 text-slate-600">
+    <div class="overflow-x-auto mb-6">
+      <table class="min-w-full text-sm divide-y divide-slate-200 border border-slate-200 rounded-lg overflow-hidden">
+        <thead class="bg-indigo-50 text-indigo-800">
           <tr>
-            <th class="px-3 py-2 text-left">#</th>
-            <th class="px-3 py-2 text-left">Tanggal</th>
-            <th class="px-3 py-2 text-left">Item</th>
-            <th class="px-3 py-2 text-left">Total</th>
+            <th class="px-3 py-2 text-left font-semibold">Tanggal</th>
+            <th class="px-3 py-2 text-center font-semibold">Jml Transaksi</th>
+            <th class="px-3 py-2 text-right font-semibold">Total Pendapatan</th>
+            <th class="px-3 py-2 text-center font-semibold">Aksi</th>
           </tr>
         </thead>
-        <tbody class="text-slate-700">
+        <tbody class="text-slate-700 bg-white divide-y divide-slate-100">
   `;
 
-  riwayatPesanan.forEach((entry, idx) => {
-    const tgl = new Date(entry.date).toLocaleString("id-ID");
-    const namaItem = (entry.items || []).map((i) => `${i.nama} x${i.qty}`).join(", ");
+  Object.keys(laporanPerTanggal).forEach((tgl) => {
+    const dataHarian = laporanPerTanggal[tgl];
     html += `
       <tr class="hover:bg-slate-50">
-        <td class="px-3 py-2">${idx + 1}</td>
-        <td class="px-3 py-2">${tgl}</td>
-        <td class="px-3 py-2">${namaItem}</td>
-        <td class="px-3 py-2">Rp ${(entry.total || 0).toLocaleString("id-ID")}</td>
+        <td class="px-3 py-3 font-medium text-slate-800">${tgl}</td>
+        <td class="px-3 py-3 text-center">${dataHarian.jumlahTransaksi}</td>
+        <td class="px-3 py-3 text-right font-bold text-emerald-600">Rp ${dataHarian.totalBayar.toLocaleString("id-ID")}</td>
+        <td class="px-3 py-3 text-center">
+          <button onclick="lihatDetailTanggal('${tgl}')" class="px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-xs font-semibold transition">Lihat Detail</button>
+        </td>
       </tr>
     `;
   });
@@ -177,14 +199,95 @@ function showLaporan() {
         </tbody>
       </table>
     </div>
-    <div class="mt-4 p-3 rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700 font-semibold">
-      Total Pendapatan: Rp ${totalPendapatan.toLocaleString("id-ID")}
+  `;
+
+  // --- AREA UNTUK MENAMPILKAN DETAIL (Awalnya Kosong) ---
+  html += `<div id="detailHarianArea" class="mt-6 border-t border-slate-200 pt-6">
+             <p class="text-slate-500 text-center italic py-4">Klik tombol "Lihat Detail" pada tabel di atas untuk melihat rincian item yang terjual.</p>
+           </div>`;
+
+  // --- TOTAL KESELURUHAN ---
+  html += `
+    <div class="mt-6 p-4 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-800 font-bold flex flex-wrap justify-between items-center shadow-sm">
+      <span class="text-lg">Total Seluruh Pendapatan (All Time):</span>
+      <span class="text-2xl">Rp ${totalPendapatan.toLocaleString("id-ID")}</span>
     </div>
   `;
 
   laporanContent.innerHTML = html;
 }
 
+function lihatDetailTanggal(tglDicari) {
+  const detailArea = document.getElementById("detailHarianArea");
+  if (!detailArea) return;
+
+  // Filter hanya transaksi yang tanggalnya sama dengan tombol yang diklik
+  const transaksiHariIni = riwayatPesanan.filter((entry) => {
+    const entryDate = new Date(entry.date);
+    const tglKey = entryDate.toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
+    return tglKey === tglDicari;
+  });
+
+  if (transaksiHariIni.length === 0) {
+    detailArea.innerHTML = `<p class="text-rose-500 text-center italic py-4">Tidak ada data untuk tanggal ini.</p>`;
+    return;
+  }
+
+  // Buat HTML untuk tabel rincian
+  let html = `<div class="flex justify-between items-center mb-3">
+                <h3 class="font-bold text-lg text-slate-800">📋 Rincian Transaksi: <span class="text-indigo-600">${tglDicari}</span></h3>
+              </div>`;
+
+  html += `
+    <div class="overflow-x-auto mb-6 bg-white rounded-lg shadow-sm border border-slate-200">
+      <table class="min-w-full text-sm divide-y divide-slate-200">
+        <thead class="bg-slate-50 text-slate-600">
+          <tr>
+            <th class="px-3 py-3 text-left font-semibold">Jam</th>
+            <th class="px-3 py-3 text-left font-semibold">Kasir</th>
+            <th class="px-3 py-3 text-left font-semibold">Item Terjual</th>
+            <th class="px-3 py-3 text-right font-semibold">Total</th>
+          </tr>
+        </thead>
+        <tbody class="text-slate-700 divide-y divide-slate-100">
+  `;
+
+  // Tampilkan urut dari yang paling baru
+  [...transaksiHariIni].reverse().forEach((entry) => {
+    const jamWaktu = new Date(entry.date).toLocaleTimeString("id-ID", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    const namaItem = (entry.items || [])
+      .map((i) => `${i.nama} <span class="text-slate-400">(x${i.qty})</span>`)
+      .join("<br>");
+    const namaKasir = entry.kasir || "-";
+
+    html += `
+      <tr class="hover:bg-slate-50">
+        <td class="px-3 py-3 whitespace-nowrap align-top font-medium">${jamWaktu}</td>
+        <td class="px-3 py-3 whitespace-nowrap align-top text-xs text-slate-500 mt-1">${namaKasir}</td>
+        <td class="px-3 py-3 align-top leading-relaxed">${namaItem}</td>
+        <td class="px-3 py-3 align-top text-right font-medium text-emerald-600">Rp ${(entry.totalBayar || 0).toLocaleString("id-ID")}</td>
+      </tr>
+    `;
+  });
+
+  html += `
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  detailArea.innerHTML = html;
+
+  // Efek scroll mulus ke bawah agar user langsung melihat tabel rinciannya
+  detailArea.scrollIntoView({ behavior: "smooth", block: "start" });
+}
 function toggleLaporan() {
   const laporanTarget = document.getElementById("laporanArea");
   const laporanBtn = document.getElementById("laporanBtn");
@@ -223,27 +326,48 @@ const tampilanMenu = () => {
 
   if (!hasil) return;
 
+  // Cek apakah saat ini sedang di halaman kasir (order.html)
+  const isKasir = window.location.pathname.includes("order.html");
+
   let output = "";
   let totalHarga = 0;
 
   kopi.forEach((item, index) => {
-    output += `
-    <tr>
-      <td>${index + 1}</td>
-      <td>${item.nama}</td>
-      <td>Rp ${item.harga.toLocaleString("id-ID")}</td>
-      <td>${item.stok}</td>
-      <td><button class="btn-edit" onclick="editMenu(${index})">Edit</button></td>
-    </tr>
-    `;
+    if (isKasir) {
+      // Tampilan untuk Kasir (Tanpa Stok dan Tombol Edit)
+      output += `
+      <tr>
+        <td class="px-3 py-2">${index + 1}</td>
+        <td class="px-3 py-2">${item.nama}</td>
+        <td class="px-3 py-2">Rp ${item.harga.toLocaleString("id-ID")}</td>
+        <td class="px-3 py-2">
+          <button onclick="tambahOrderanIndex(${index})" class="px-2 py-1 bg-emerald-100 text-emerald-700 rounded hover:bg-emerald-200 text-xs font-bold transition">+ Tambah</button>
+        </td>
+      </tr>
+      `;
+    } else {
+      // Tampilan untuk Admin (Lengkap dengan Stok dan Edit)
+      output += `
+      <tr>
+        <td class="px-3 py-2">${index + 1}</td>
+        <td class="px-3 py-2">${item.nama}</td>
+        <td class="px-3 py-2">Rp ${item.harga.toLocaleString("id-ID")}</td>
+        <td class="px-3 py-2">${item.stok}</td>
+        <td class="px-3 py-2">
+          <button class="px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 text-xs transition" onclick="editMenu(${index})">Edit</button>
+        </td>
+      </tr>
+      `;
+    }
     totalHarga += item.harga;
   });
 
   hasil.innerHTML = output;
-  if (harga) {
+  if (harga && !isKasir) {
     harga.innerHTML = `Total Harga Semua Menu: Rp ${totalHarga.toLocaleString("id-ID")}`;
   }
 };
+let editCurrentIndex = -1;
 
 function editMenu(index) {
   if (index < 0 || index >= kopi.length) {
@@ -252,24 +376,55 @@ function editMenu(index) {
   }
 
   const current = kopi[index];
-  const newName = prompt("Ubah nama menu:", current.nama);
-  if (newName === null || newName.trim() === "") {
+  editCurrentIndex = index; // Simpan index-nya
+
+  // Isi nilai saat ini ke dalam form input di Modal
+  document.getElementById("editNama").value = current.nama;
+  document.getElementById("editHarga").value = current.harga;
+  document.getElementById("editStok").value = current.stok;
+
+  // Tampilkan Modal
+  document.getElementById("editModal").classList.remove("hidden");
+}
+
+function tutupModalEdit() {
+  // Sembunyikan Modal dan reset index
+  document.getElementById("editModal").classList.add("hidden");
+  editCurrentIndex = -1;
+}
+
+function simpanEditMenu() {
+  if (editCurrentIndex === -1) return;
+
+  // Ambil nilai baru dari input Modal
+  const newName = document.getElementById("editNama").value.trim();
+  const newPrice = parseInt(document.getElementById("editHarga").value, 10);
+  const newStok = parseInt(document.getElementById("editStok").value, 10);
+
+  // Validasi data
+  if (!newName) {
     showToast("Nama menu tidak boleh kosong.", "error");
     return;
   }
-
-  const newPriceInput = prompt("Ubah harga menu:", current.harga);
-  const newPrice = parseInt(newPriceInput, 10);
   if (isNaN(newPrice) || newPrice < 1000) {
     showToast("Harga harus angka valid minimal Rp 1000.", "error");
     return;
   }
+  if (isNaN(newStok) || newStok < 0) {
+    showToast("Stok tidak valid (minimal 0).", "error");
+    return;
+  }
 
-  kopi[index].nama = newName.trim();
-  kopi[index].harga = newPrice;
+  // Simpan data baru ke array kopi
+  kopi[editCurrentIndex].nama = newName;
+  kopi[editCurrentIndex].harga = newPrice;
+  kopi[editCurrentIndex].stok = newStok;
+
+  // Render ulang UI dan tutup modal
   simpanData();
   tampilanMenu();
-  showToast("Menu berhasil diperbarui.", "success");
+  tutupModalEdit();
+  showToast("Perubahan berhasil disimpan.", "success");
 }
 
 function tambahMenu() {
@@ -351,7 +506,10 @@ const tampilanOrderan = () => {
     `;
   });
 
-  const totalBayar = keranjang.reduce((acc, item) => acc + item.harga * item.qty, 0);
+  const totalBayar = keranjang.reduce(
+    (acc, item) => acc + item.harga * item.qty,
+    0,
+  );
 
   if (keranjang.length === 0) {
     output = `
@@ -381,20 +539,31 @@ const tampilanOrderan = () => {
 };
 
 function updateKembalian() {
-  const totalBayar = keranjang.reduce((acc, item) => acc + item.harga * item.qty, 0);
+  const totalBayar = keranjang.reduce(
+    (acc, item) => acc + item.harga * item.qty,
+    0,
+  );
   const uangDiterimaEl = document.getElementById("uangDiterima");
   const kembalianEl = document.getElementById("kembalianVal");
 
   if (!uangDiterimaEl || !kembalianEl) return;
 
   const uangDiterima = Number(uangDiterimaEl.value);
-  if (Number.isNaN(uangDiterima) || uangDiterima < 0) {
-    kembalianEl.textContent = "Rp 0";
+  if (Number.isNaN(uangDiterima) || uangDiterima === 0) {
+    kembalianEl.innerHTML = `<span class="text-slate-700">Rp 0</span>`;
     return;
   }
 
-  const kembalian = Math.max(0, uangDiterima - totalBayar);
-  kembalianEl.textContent = `Rp ${kembalian.toLocaleString("id-ID")}`;
+  // Logika pengecekan uang
+  if (uangDiterima < totalBayar) {
+    // Jika uang kurang
+    const kurang = totalBayar - uangDiterima;
+    kembalianEl.innerHTML = `<span class="text-rose-500 font-bold">Kurang: Rp ${kurang.toLocaleString("id-ID")}</span>`;
+  } else {
+    // Jika uang pas atau ada kembalian
+    const kembalian = uangDiterima - totalBayar;
+    kembalianEl.innerHTML = `<span class="text-emerald-600 font-bold">Rp ${kembalian.toLocaleString("id-ID")}</span>`;
+  }
 }
 
 function tambahOrderan() {
@@ -412,7 +581,9 @@ function tambahOrderan() {
     return;
   }
 
-  const itemDitemukan = keranjang.find((item) => item.nama === menuDipilih.nama);
+  const itemDitemukan = keranjang.find(
+    (item) => item.nama === menuDipilih.nama,
+  );
 
   if (itemDitemukan) {
     if (itemDitemukan.qty + 1 > menuDipilih.stok) {
@@ -421,14 +592,17 @@ function tambahOrderan() {
     }
     itemDitemukan.qty += 1;
   } else {
-    keranjang.push({ nama: menuDipilih.nama, harga: menuDipilih.harga, qty: 1 });
+    keranjang.push({
+      nama: menuDipilih.nama,
+      harga: menuDipilih.harga,
+      qty: 1,
+    });
   }
 
   tampilanOrderan();
   simpanData();
   document.getElementById("tambahOrder").value = "";
 }
-
 
 function hapusOrderan() {
   let nomorMenu = document.getElementById("hapusOrder").value;
@@ -457,6 +631,37 @@ const kurangQty = (index) => {
   }
 };
 
+function tambahOrderanIndex(index) {
+  const menuDipilih = kopi[index];
+
+  if (menuDipilih.stok <= 0) {
+    showToast(`Maaf, stok ${menuDipilih.nama} sudah habis.`, "error");
+    return;
+  }
+
+  const itemDitemukan = keranjang.find(
+    (item) => item.nama === menuDipilih.nama,
+  );
+
+  if (itemDitemukan) {
+    if (itemDitemukan.qty + 1 > menuDipilih.stok) {
+      showToast("Stok tidak cukup untuk menambah lagi.", "error");
+      return;
+    }
+    itemDitemukan.qty += 1;
+  } else {
+    keranjang.push({
+      nama: menuDipilih.nama,
+      harga: menuDipilih.harga,
+      qty: 1,
+    });
+  }
+
+  tampilanOrderan();
+  simpanData();
+  showToast(`${menuDipilih.nama} ditambahkan ke keranjang`, "success");
+}
+
 const tambahQty = (index) => {
   if (!keranjang[index]) return;
 
@@ -484,13 +689,18 @@ function selesaikanPembayaran() {
     return;
   }
 
-  const totalBayar = keranjang.reduce((acc, item) => acc + item.harga * item.qty, 0);
+  const totalBayar = keranjang.reduce(
+    (acc, item) => acc + item.harga * item.qty,
+    0,
+  );
   const uangDiterimaEl = document.getElementById("uangDiterima");
   const metodePembayaranEl = document.getElementById("metodePembayaran");
   const kembalianEl = document.getElementById("kembalianVal");
 
   const uangDiterima = uangDiterimaEl ? Number(uangDiterimaEl.value) : 0;
-  const metodePembayaran = metodePembayaranEl ? metodePembayaranEl.value : "Tunai";
+  const metodePembayaran = metodePembayaranEl
+    ? metodePembayaranEl.value
+    : "Tunai";
 
   if (Number.isNaN(uangDiterima) || uangDiterima < totalBayar) {
     showToast("Uang diterima harus tidak kurang dari total bayar.", "error");
@@ -511,7 +721,10 @@ function selesaikanPembayaran() {
     if (kopi[menuIndex].stok >= orderItem.qty) {
       kopi[menuIndex].stok -= orderItem.qty;
     } else {
-      showToast(`Stok untuk ${orderItem.nama} tidak cukup. Transaksi dibatalkan.`, "error");
+      showToast(
+        `Stok untuk ${orderItem.nama} tidak cukup. Transaksi dibatalkan.`,
+        "error",
+      );
       return;
     }
   }
@@ -541,8 +754,9 @@ function selesaikanPembayaran() {
   if (!strukArea) return;
 
   const strukRows = transaksi.items
-    .map((item) =>
-      `
+    .map(
+      (item) =>
+        `
       <div class="struk-row" style="display:flex; justify-content:space-between; margin-bottom:0.25rem;">
         <span>${item.nama}</span>
         <span>${item.qty} x Rp ${item.harga.toLocaleString("id-ID")}</span>
@@ -574,5 +788,3 @@ function selesaikanPembayaran() {
     showToast("Pesanan berhasil.", "success");
   }, 500);
 }
-
-

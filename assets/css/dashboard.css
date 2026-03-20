@@ -23,7 +23,7 @@ body {
   background: #f8fafc;
   color: var(--text);
   padding: 0;
-  font-family: 'Inter', 'Segoe UI', sans-serif;
+  font-family: "Inter", "Segoe UI", sans-serif;
 }
 
 .navbar {
@@ -33,7 +33,7 @@ body {
   background: #fff;
   border-bottom: 1px solid #ebddd2;
   padding: 0.95rem 1.3rem;
-  box-shadow: 0 3px 14px rgba(0,0,0,0.08);
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.08);
 }
 
 .navbar .brand {
@@ -119,7 +119,9 @@ body {
   border-radius: 10px;
   min-width: 180px;
   font-size: 0.95rem;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .input-group input:focus,
@@ -140,7 +142,10 @@ button {
   font-weight: 700;
   cursor: pointer;
   color: #fff;
-  transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    background-color 0.3s ease;
   min-height: 42px;
 }
 
@@ -228,18 +233,35 @@ tbody tr:hover {
 }
 
 @media (max-width: 980px) {
-  .container { margin: 0.9rem auto; }
-  .dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+  .container {
+    margin: 0.9rem auto;
+  }
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
 }
 
 @media (min-width: 981px) {
-  .dashboard-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.2rem; }
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.2rem;
+  }
 }
 
 @media (max-width: 700px) {
-  .navbar { flex-direction: column; gap: 0.7rem; }
-  .card { padding: 1rem; }
-  .input-group { flex-direction: column; }
+  .navbar {
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+  .card {
+    padding: 1rem;
+  }
+  .input-group {
+    flex-direction: column;
+  }
 }
 
 #strukArea {
@@ -249,7 +271,7 @@ tbody tr:hover {
 #strukArea .struk-wrapper {
   max-width: 80mm;
   width: 100%;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   white-space: nowrap;
 }
 
@@ -260,8 +282,8 @@ tbody tr:hover {
 }
 
 #strukArea .struk-separator {
-  font-family: 'Courier New', monospace;
-  opacity: .65;
+  font-family: "Courier New", monospace;
+  opacity: 0.65;
   margin: 4px 0;
 }
 

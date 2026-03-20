@@ -9,32 +9,60 @@
   <body class="bg-slate-50 text-slate-800 min-h-screen">
     <div class="max-w-md mx-auto mt-12 p-4">
       <div class="flex justify-between items-center mb-6">
-        <a href="../index.html" class="text-2xl font-bold text-emerald-700">KopiKita</a>
+        <a href="../index.html" class="text-2xl font-bold text-emerald-700"
+          >KopiKita</a
+        >
         <a href="login.html" class="text-sm text-slate-500">Login</a>
       </div>
 
       <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
         <div class="flex items-center justify-between mb-4">
           <h1 class="text-2xl font-bold">✍️ Register Akun</h1>
-          <span class="px-3 py-1 rounded-full border border-slate-300 text-slate-600 text-xs">Role: Baru</span>
+          <span
+            class="px-3 py-1 rounded-full border border-slate-300 text-slate-600 text-xs"
+            >Role: Baru</span
+          >
         </div>
 
         <div class="space-y-4">
-          <input id="regUsername" type="text" placeholder="Username" class="w-full rounded-xl border border-slate-300 px-4 py-2 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none" />
-          <input id="regPassword" type="password" placeholder="Password" class="w-full rounded-xl border border-slate-300 px-4 py-2 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none" />
-          <select id="regRole" class="w-full rounded-xl border border-slate-300 px-4 py-2 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none">
+          <input
+            id="regUsername"
+            type="text"
+            placeholder="Username"
+            class="w-full rounded-xl border border-slate-300 px-4 py-2 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none"
+          />
+          <input
+            id="regPassword"
+            type="password"
+            placeholder="Password"
+            class="w-full rounded-xl border border-slate-300 px-4 py-2 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none"
+          />
+          <select
+            id="regRole"
+            class="w-full rounded-xl border border-slate-300 px-4 py-2 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none"
+          >
             <option value="kasir">Kasir</option>
             <option value="admin">Admin</option>
           </select>
-          <button onclick="handleRegister()" class="w-full rounded-xl bg-emerald-600 text-white py-2 font-semibold hover:bg-emerald-700 transition">Daftar</button>
+          <button
+            onclick="handleRegister()"
+            class="w-full rounded-xl bg-emerald-600 text-white py-2 font-semibold hover:bg-emerald-700 transition"
+          >
+            Daftar
+          </button>
         </div>
 
         <p id="registerMessage" class="mt-3 text-sm"></p>
       </div>
 
       <div class="mt-4 text-sm text-slate-600">
-        <p>Sudah punya akun? <a href="login.html" class="text-emerald-600 underline">Login</a></p>
-        <p><a href="../index.html" class="text-slate-500">Kembali ke Beranda</a></p>
+        <p>
+          Sudah punya akun?
+          <a href="login.html" class="text-emerald-600 underline">Login</a>
+        </p>
+        <p>
+          <a href="../index.html" class="text-slate-500">Kembali ke Beranda</a>
+        </p>
       </div>
 
       <div class="mt-4 text-xs text-slate-500 text-center">© 2026 KopiKita</div>

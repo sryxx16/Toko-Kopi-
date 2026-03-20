@@ -16,12 +16,22 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Plus Jakarta Sans", "Inter", system-ui, -apple-system, sans-serif;
+  font-family:
+    "Plus Jakarta Sans",
+    "Inter",
+    system-ui,
+    -apple-system,
+    sans-serif;
 }
 
 body {
   min-height: 100vh;
-  background: radial-gradient(circle at top left, #fffbf6 0%, #f4e7d7 45%, #ede1d5 100%);
+  background: radial-gradient(
+    circle at top left,
+    #fffbf6 0%,
+    #f4e7d7 45%,
+    #ede1d5 100%
+  );
   display: grid;
   place-items: center;
   color: var(--text);
@@ -107,7 +117,9 @@ h1 {
   font-size: 1rem;
   color: #2f1f1a;
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .input-group input:focus,
@@ -124,7 +136,9 @@ button {
   color: white;
   font-weight: 700;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 button:hover {
